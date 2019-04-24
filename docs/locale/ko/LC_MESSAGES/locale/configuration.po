@@ -1,0 +1,254 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2013, Konsta Vesterinen
+# This file is distributed under the same license as the
+# SQLAlchemy-Continuum package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SQLAlchemy-Continuum 1.3.9\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-04-24 16:03+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+
+#: ../../configuration.rst:2
+msgid "Configuration"
+msgstr ""
+
+#: ../../configuration.rst:5
+msgid "Global and class level configuration"
+msgstr ""
+
+#: ../../configuration.rst:7
+msgid ""
+"All Continuum configuration parameters can be set on global level "
+"(manager level) and on class level. Setting an option at manager level "
+"affects all classes within the scope of the manager's class "
+"instrumentation listener (by default all SQLAlchemy declarative models)."
+msgstr ""
+
+#: ../../configuration.rst:9
+msgid ""
+"In the following example we set 'transaction_column_name' configuration "
+"option to False at the manager level."
+msgstr ""
+
+#: ../../configuration.rst:18
+msgid ""
+"As the name suggests class level configuration only applies to given "
+"class. Class level configuration can be passed to __versioned__ class "
+"attribute."
+msgstr ""
+
+#: ../../configuration.rst:31
+msgid "Versioning strategies"
+msgstr ""
+
+#: ../../configuration.rst:34
+msgid ""
+"Similar to Hibernate Envers SQLAlchemy-Continuum offers two distinct "
+"versioning strategies 'validity' and 'subquery'. The default strategy is "
+"'validity'."
+msgstr ""
+
+#: ../../configuration.rst:38
+msgid "Validity"
+msgstr ""
+
+#: ../../configuration.rst:40
+msgid ""
+"The 'validity' strategy saves two columns in each history table, namely "
+"'transaction_id' and 'end_transaction_id'. The names of these columns can"
+" be configured with configuration options `transaction_column_name` and "
+"`end_transaction_column_name`."
+msgstr ""
+
+#: ../../configuration.rst:42
+msgid ""
+"As with 'subquery' strategy for each inserted, updated and deleted entity"
+" Continuum creates new version in the history table. However it also "
+"updates the end_transaction_id of the previous version to point at the "
+"current version. This creates a little bit of overhead during data "
+"manipulation."
+msgstr ""
+
+#: ../../configuration.rst:44
+msgid ""
+"With 'validity' strategy version traversal is very fast. When accessing "
+"previous version Continuum tries to find the version record where the "
+"primary keys match and end_transaction_id is the same as the "
+"transaction_id of the given version record. When accessing the next "
+"version Continuum tries to find the version record where the primary keys"
+" match and transaction_id is the same as the end_transaction_id of the "
+"given version record."
+msgstr ""
+
+#: ../../configuration.rst:49 ../../configuration.rst:66
+msgid "Pros:"
+msgstr ""
+
+#: ../../configuration.rst:48
+msgid "Version traversal is much faster since no correlated subqueries are needed"
+msgstr ""
+
+#: ../../configuration.rst:53 ../../configuration.rst:71
+msgid "Cons:"
+msgstr ""
+
+#: ../../configuration.rst:52
+msgid "Updates, inserts and deletes are little bit slower"
+msgstr ""
+
+#: ../../configuration.rst:56
+msgid "Subquery"
+msgstr ""
+
+#: ../../configuration.rst:58
+msgid ""
+"The 'subquery' strategy uses one column in each history table, namely "
+"'transaction_id'. The name of this column can be configured with "
+"configuration option `transaction_column_name`."
+msgstr ""
+
+#: ../../configuration.rst:60
+msgid ""
+"After each inserted, updated and deleted entity Continuum creates new "
+"version in the history table and sets the 'transaction_id' column to "
+"point at the current transaction."
+msgstr ""
+
+#: ../../configuration.rst:62
+msgid ""
+"With 'subquery' strategy the version traversal is slow. When accessing "
+"previous and next versions of given version object needs correlated "
+"subqueries."
+msgstr ""
+
+#: ../../configuration.rst:66
+msgid "Updates, inserts and deletes little bit faster than in 'validity' strategy"
+msgstr ""
+
+#: ../../configuration.rst:69
+msgid "Version traversel much slower"
+msgstr ""
+
+#: ../../configuration.rst:74
+msgid "Column exclusion and inclusion"
+msgstr ""
+
+#: ../../configuration.rst:76
+msgid ""
+"With `exclude` configuration option you can define which entity "
+"attributes you want to get versioned. By default Continuum versions all "
+"entity attributes."
+msgstr ""
+
+#: ../../configuration.rst:94
+msgid "Basic configuration options"
+msgstr ""
+
+#: ../../configuration.rst:96
+msgid "Here is a full list of configuration options:"
+msgstr ""
+
+#: ../../configuration.rst:99
+msgid "base_classes (default: None)"
+msgstr ""
+
+#: ../../configuration.rst:99
+msgid "A tuple defining history class base classes."
+msgstr ""
+
+#: ../../configuration.rst:102
+#, python-format
+msgid "table_name (default: '%s_version')"
+msgstr ""
+
+#: ../../configuration.rst:102
+msgid "The name of the history table."
+msgstr ""
+
+#: ../../configuration.rst:105
+msgid "transaction_column_name (default: 'transaction_id')"
+msgstr ""
+
+#: ../../configuration.rst:105
+msgid "The name of the transaction column (used by history tables)."
+msgstr ""
+
+#: ../../configuration.rst:108
+msgid "end_transaction_column_name (default: 'end_transaction_id')"
+msgstr ""
+
+#: ../../configuration.rst:108
+msgid ""
+"The name of the end transaction column in history table when using the "
+"validity versioning strategy."
+msgstr ""
+
+#: ../../configuration.rst:111
+msgid "operation_type_column_name (default: 'operation_type')"
+msgstr ""
+
+#: ../../configuration.rst:111
+msgid "The name of the operation type column (used by history tables)."
+msgstr ""
+
+#: ../../configuration.rst:115
+msgid "strategy (default: 'validity')"
+msgstr ""
+
+#: ../../configuration.rst:114
+msgid "The versioning strategy to use. Either 'validity' or 'subquery'"
+msgstr ""
+
+#: ../../configuration.rst:117
+msgid "Example ::"
+msgstr ""
+
+#: ../../configuration.rst:133
+msgid "Customizing transaction user class"
+msgstr ""
+
+#: ../../configuration.rst:135
+msgid ""
+"By default Continuum tries to build a relationship between 'User' class "
+"and Transaction class. If you have differently named user class you can "
+"simply pass its name to make_versioned:"
+msgstr ""
+
+#: ../../configuration.rst:145
+msgid ""
+"If you don't want transactions to contain any user references you can "
+"also disable this feature."
+msgstr ""
+
+#: ../../configuration.rst:154
+msgid "Customizing versioned mappers"
+msgstr ""
+
+#: ../../configuration.rst:156
+msgid ""
+"By default SQLAlchemy-Continuum versions all mappers. You can override "
+"this behaviour by passing the desired mapper class/object to "
+"make_versioned function."
+msgstr ""
+
+#: ../../configuration.rst:165
+msgid "Customizing versioned sessions"
+msgstr ""
+
+#: ../../configuration.rst:168
+msgid ""
+"By default SQLAlchemy-Continuum versions all sessions. You can override "
+"this behaviour by passing the desired session class/object to "
+"make_versioned function."
+msgstr ""
+

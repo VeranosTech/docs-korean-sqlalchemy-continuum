@@ -1,0 +1,107 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2013, Konsta Vesterinen
+# This file is distributed under the same license as the
+# SQLAlchemy-Continuum package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SQLAlchemy-Continuum 1.3.9\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-04-24 16:03+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+
+#: ../../transactions.rst:2
+msgid "Transactions"
+msgstr ""
+
+#: ../../transactions.rst:6
+msgid "Transaction"
+msgstr ""
+
+#: ../../transactions.rst:9
+msgid ""
+"For each committed transaction SQLAlchemy-Continuum creates a new "
+"Transaction record."
+msgstr ""
+
+#: ../../transactions.rst:11
+msgid ""
+"Transaction can be queried just like any other sqlalchemy declarative "
+"model."
+msgstr ""
+
+#: ../../transactions.rst:24
+msgid "UnitOfWork"
+msgstr ""
+
+#: ../../transactions.rst:26
+msgid ""
+"For each database connection SQLAlchemy-Continuum creates an internal "
+"UnitOfWork object. Normally these objects are created at before flush "
+"phase of session workflow. However you can also force create unit of work"
+" before this phase."
+msgstr ""
+
+#: ../../transactions.rst:36
+msgid ""
+"Transaction objects are normally created automatically at before flush "
+"phase. If you need access to transaction object before the flush phase "
+"begins you can do so by calling the create_transaction method of the "
+"UnitOfWork class."
+msgstr ""
+
+#: ../../transactions.rst:46
+msgid ""
+"The version objects are normally created during the after flush phase but"
+" you can also force create those at any time by calling make_versions "
+"method."
+msgstr ""
+
+#: ../../transactions.rst:56
+msgid "Workflow internals"
+msgstr ""
+
+#: ../../transactions.rst:58
+msgid "Consider the following code snippet where we create a new article."
+msgstr ""
+
+#: ../../transactions.rst:71
+msgid "This would execute the following SQL queries (on PostgreSQL)"
+msgstr ""
+
+#: ../../transactions.rst:74
+msgid "INSERT INTO article (name, content) VALUES (?, ?)"
+msgstr ""
+
+#: ../../transactions.rst:75
+msgid "params: ('Some article', 'Some content')"
+msgstr ""
+
+#: ../../transactions.rst:76
+msgid "INSERT INTO transaction (issued_at) VALUES (?)"
+msgstr ""
+
+#: ../../transactions.rst:77
+msgid "params: (datetime.utcnow())"
+msgstr ""
+
+#: ../../transactions.rst:80
+msgid ""
+"INSERT INTO article_version (id, name, content, transaction_id) VALUES "
+"(?, ?, ?, ?)"
+msgstr ""
+
+#: ../../transactions.rst:79
+msgid ""
+"params: (<article id from query 1>, 'Some article', 'Some content', "
+"<transaction id from query 2>)"
+msgstr ""
+

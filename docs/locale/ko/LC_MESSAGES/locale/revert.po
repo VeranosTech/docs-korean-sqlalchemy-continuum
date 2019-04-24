@@ -1,0 +1,64 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2013, Konsta Vesterinen
+# This file is distributed under the same license as the
+# SQLAlchemy-Continuum package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SQLAlchemy-Continuum 1.3.9\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-04-24 16:03+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+
+#: ../../revert.rst:2
+msgid "Reverting changes"
+msgstr ""
+
+#: ../../revert.rst:4
+msgid ""
+"One of the major benefits of SQLAlchemy-Continuum is its ability to "
+"revert changes."
+msgstr ""
+
+#: ../../revert.rst:8
+msgid "Revert update"
+msgstr ""
+
+#: ../../revert.rst:29
+msgid "Revert delete"
+msgstr ""
+
+#: ../../revert.rst:51
+msgid "Revert relationships"
+msgstr ""
+
+#: ../../revert.rst:53
+msgid ""
+"Sometimes you may have cases where you want to revert an object as well "
+"as some of its relation to certain state. Consider the following model "
+"definition:"
+msgstr ""
+
+#: ../../revert.rst:76
+msgid "Now lets say some user first adds an article with couple of tags:"
+msgstr ""
+
+#: ../../revert.rst:91
+msgid "Then lets say another user deletes one of the tags:"
+msgstr ""
+
+#: ../../revert.rst:104
+msgid ""
+"Now the first user wants to set the article back to its original state. "
+"It can be achieved as follows (notice how we use the relations "
+"parameter):"
+msgstr ""
+

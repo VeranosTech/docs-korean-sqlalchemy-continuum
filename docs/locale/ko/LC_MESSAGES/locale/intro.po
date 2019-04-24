@@ -1,0 +1,152 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2013, Konsta Vesterinen
+# This file is distributed under the same license as the
+# SQLAlchemy-Continuum package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: SQLAlchemy-Continuum 1.3.9\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-04-24 16:03+0900\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+
+#: ../../intro.rst:2
+msgid "Introduction"
+msgstr ""
+
+#: ../../intro.rst:6
+msgid "Why?"
+msgstr ""
+
+#: ../../intro.rst:8
+msgid ""
+"SQLAlchemy already has a versioning extension. This extension however is "
+"very limited. It does not support versioning entire transactions."
+msgstr ""
+
+#: ../../intro.rst:10
+msgid ""
+"Hibernate for Java has Envers, which had nice features but lacks a nice "
+"API. Ruby on Rails has papertrail_, which has very nice API but lacks the"
+" efficiency and feature set of Envers."
+msgstr ""
+
+#: ../../intro.rst:12
+msgid ""
+"As a Python/SQLAlchemy enthusiast I wanted to create a database "
+"versioning tool for Python with all the features of Envers and with as "
+"intuitive API as papertrail. Also I wanted to make it _fast_ keeping "
+"things as close to the database as possible."
+msgstr ""
+
+#: ../../intro.rst:18
+msgid "Features"
+msgstr ""
+
+#: ../../intro.rst:20
+msgid "Does not store updates which don't change anything"
+msgstr ""
+
+#: ../../intro.rst:21
+msgid "Supports alembic migrations"
+msgstr ""
+
+#: ../../intro.rst:22
+msgid ""
+"Can revert objects data as well as all object relations at given "
+"transaction even if the object was deleted"
+msgstr ""
+
+#: ../../intro.rst:23
+msgid "Transactions can be queried afterwards using SQLAlchemy query syntax"
+msgstr ""
+
+#: ../../intro.rst:24
+msgid "Querying for changed records at given transaction"
+msgstr ""
+
+#: ../../intro.rst:25
+msgid "Querying for versions of entity that modified given property"
+msgstr ""
+
+#: ../../intro.rst:26
+msgid "Querying for transactions, at which entities of a given class changed"
+msgstr ""
+
+#: ../../intro.rst:27
+msgid ""
+"History models give access to parent objects relations at any given point"
+" in time"
+msgstr ""
+
+#: ../../intro.rst:32
+msgid "Installation"
+msgstr ""
+
+#: ../../intro.rst:42
+msgid "Basics"
+msgstr ""
+
+#: ../../intro.rst:44
+msgid "In order to make your models versioned you need two things:"
+msgstr ""
+
+#: ../../intro.rst:46
+msgid "Call make_versioned() before your models are defined."
+msgstr ""
+
+#: ../../intro.rst:47
+msgid "Add __versioned__ to all models you wish to add versioning to"
+msgstr ""
+
+#: ../../intro.rst:73
+msgid "After this setup SQLAlchemy-Continuum does the following things:"
+msgstr ""
+
+#: ../../intro.rst:75
+msgid ""
+"It creates ArticleHistory model that acts as version history for Article "
+"model"
+msgstr ""
+
+#: ../../intro.rst:76
+msgid ""
+"Creates TransactionLog and TransactionChanges models for transactional "
+"history tracking"
+msgstr ""
+
+#: ../../intro.rst:77
+msgid ""
+"Adds couple of listeners so that each Article object insert, update and "
+"delete gets recorded"
+msgstr ""
+
+#: ../../intro.rst:80
+msgid ""
+"When the models have been configured either by calling "
+"configure_mappers() or by accessing some of them the first time, the "
+"following things become available:"
+msgstr ""
+
+#: ../../intro.rst:94
+msgid "Versions and transactions"
+msgstr ""
+
+#: ../../intro.rst:96
+msgid ""
+"At the end of each transaction SQLAlchemy-Continuum gathers all changes "
+"together and creates version objects for each changed versioned entity. "
+"Continuum also creates one TransactionLog entity and N number of "
+"TransactionChanges entities per transaction (here N is the number of "
+"affected classes per transaction). TransactionLog and TransactionChanges "
+"entities are created for transaction tracking."
+msgstr ""
+
