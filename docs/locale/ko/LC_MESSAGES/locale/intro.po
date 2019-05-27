@@ -20,17 +20,19 @@ msgstr ""
 
 #: ../../intro.rst:2
 msgid "Introduction"
-msgstr ""
+msgstr "소개"
 
 #: ../../intro.rst:6
 msgid "Why?"
-msgstr ""
+msgstr "개발 이유"
 
 #: ../../intro.rst:8
 msgid ""
 "SQLAlchemy already has a versioning extension. This extension however is "
 "very limited. It does not support versioning entire transactions."
 msgstr ""
+"SQLAlchemy에는 이미 버저닝 확장기능이 있다. 하지만 이 기능은 아주 제한적이다. "
+"전체 트랜잭션을 버저닝하는 것을 지원하지 않는다."
 
 #: ../../intro.rst:10
 msgid ""
@@ -38,6 +40,9 @@ msgid ""
 "API. Ruby on Rails has papertrail_, which has very nice API but lacks the"
 " efficiency and feature set of Envers."
 msgstr ""
+"자바에는 하이버네이트용 확장인 엔버스(Envers)가 있다. 엔버스는 기능이 좋지만 API가 좋지 않다. "
+"루비 온 레일스에는 페이퍼테일(papertrail_)이 있다. 페이퍼테일은 훌륭한 API를 가지고 있지만 "
+"엔버스 만큼 효율적이고 많은 기능을 가지고 있지 않다. "
 
 #: ../../intro.rst:12
 msgid ""
@@ -46,88 +51,95 @@ msgid ""
 "intuitive API as papertrail. Also I wanted to make it _fast_ keeping "
 "things as close to the database as possible."
 msgstr ""
+"나는 Python/SQLAlchemy 추종자로서 파이썬으로 엔버스만큼 기능이 많고 페이퍼테일만큼 API가 직관적인 "
+"데이터베이스 버저닝 도구를 만들고 싶었다. 또한 가능한 한 데이터베이스 레벨의 구현을 통해 빠르게 실행되기를 원했다. "
 
 #: ../../intro.rst:18
 msgid "Features"
-msgstr ""
+msgstr "기능"
 
 #: ../../intro.rst:20
 msgid "Does not store updates which don't change anything"
-msgstr ""
+msgstr "아무것도 변경하지 않는 업데이트는 저장하지 않는다."
 
 #: ../../intro.rst:21
 msgid "Supports alembic migrations"
-msgstr ""
+msgstr "알렘빅(alembic) 마이그레이션을 지원한다."
 
 #: ../../intro.rst:22
 msgid ""
 "Can revert objects data as well as all object relations at given "
 "transaction even if the object was deleted"
 msgstr ""
+"객체가 삭제되는 경우에도 주어진 트랜잭션에 대한 모든 객체 데이터와 객체간의 릴레이션을 복원할 수 있다. "
 
 #: ../../intro.rst:23
 msgid "Transactions can be queried afterwards using SQLAlchemy query syntax"
-msgstr ""
+msgstr "SQLAlchemy 쿼리 문법으로 트랜잭션을 쿼리할 수 있다. "
 
 #: ../../intro.rst:24
 msgid "Querying for changed records at given transaction"
-msgstr ""
+msgstr "주어진 트랜잭션에 대응하여 변경된 레코드를 쿼리할 수 있다."
 
 #: ../../intro.rst:25
 msgid "Querying for versions of entity that modified given property"
-msgstr ""
+msgstr "변경된 속성을 가진 엔티티 버전을 쿼리할 수 있다."
 
 #: ../../intro.rst:26
 msgid "Querying for transactions, at which entities of a given class changed"
-msgstr ""
+msgstr "주어진 클래스의 엔티티가 변경된 트랜잭션을 쿼리할 수 있다. "
 
 #: ../../intro.rst:27
 msgid ""
 "History models give access to parent objects relations at any given point"
 " in time"
 msgstr ""
+"히스토리 모델은 어떤 시점에서도 부모 객체에 접근할 수 있다."
 
 #: ../../intro.rst:32
 msgid "Installation"
-msgstr ""
+msgstr "설치"
 
 #: ../../intro.rst:42
 msgid "Basics"
-msgstr ""
+msgstr "기본"
 
 #: ../../intro.rst:44
 msgid "In order to make your models versioned you need two things:"
-msgstr ""
+msgstr "모델을 버저닝하도록 하려면 두가지 설정을 해야 한다.:"
 
 #: ../../intro.rst:46
 msgid "Call make_versioned() before your models are defined."
-msgstr ""
+msgstr "모델을 정의하기 전에 make_versioned() 함수를 호출한다. "
 
 #: ../../intro.rst:47
 msgid "Add __versioned__ to all models you wish to add versioning to"
-msgstr ""
+msgstr "버저닝을 하려는 모든 모델에 __versioned__ 속성을 추가한다. "
 
 #: ../../intro.rst:73
 msgid "After this setup SQLAlchemy-Continuum does the following things:"
-msgstr ""
+msgstr "이렇게 설정하면 SQLAlchemy-Continuum는 다음과 같이 동작한다.:"
 
 #: ../../intro.rst:75
 msgid ""
 "It creates ArticleHistory model that acts as version history for Article "
 "model"
 msgstr ""
+"Article 모델에 대한 버전 기록을 행하는 ArticleHistory 모델을 생성한다. "
 
 #: ../../intro.rst:76
 msgid ""
 "Creates TransactionLog and TransactionChanges models for transactional "
 "history tracking"
 msgstr ""
+"트랜잭션 기록 및 추적을 위한 TransactionLog 테이블과 TransactionChanges 테이블을 생성한다. "
 
 #: ../../intro.rst:77
 msgid ""
 "Adds couple of listeners so that each Article object insert, update and "
 "delete gets recorded"
 msgstr ""
+"Article 객체를 생성, 수정, 삭제할 때마다 실행되는 리스너(listener)들을 추가한다. "
 
 #: ../../intro.rst:80
 msgid ""
@@ -135,10 +147,11 @@ msgid ""
 "configure_mappers() or by accessing some of them the first time, the "
 "following things become available:"
 msgstr ""
+"configure_mappers() 함수를 호출하여 모델을 설정하거나 모델을 처음으로 접근할 때, 다음 일들이 발생한다.:"
 
 #: ../../intro.rst:94
 msgid "Versions and transactions"
-msgstr ""
+msgstr "버전과 트랜잭션"
 
 #: ../../intro.rst:96
 msgid ""
@@ -149,4 +162,8 @@ msgid ""
 "affected classes per transaction). TransactionLog and TransactionChanges "
 "entities are created for transaction tracking."
 msgstr ""
+"트랜잭션이 끝날 때 SQLAlchemy-Continuum은 모든 변경사항을 모아서 각각의 변경된 엔티티에 대한 "
+"버전 객체를 생성한다. 또한 하나의 TransactionLog 엔티티와 트랜잭션당 N개의 TransactionChanges "
+"엔티티(여기에서 N은 트랜잭션에 의해 영향을 받는 클래스의 개수이다.)를 생성한다. "
+"TransactionLog 및 TransactionChanges 엔티티는 트랜잭션 추적시에도 생성된다. "
 
