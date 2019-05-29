@@ -20,11 +20,11 @@ msgstr ""
 
 #: ../../version_objects.rst:2
 msgid "Version objects"
-msgstr "버전 객체"
+msgstr ""
 
 #: ../../version_objects.rst:6
 msgid "Operation types"
-msgstr "연산 유형"
+msgstr ""
 
 #: ../../version_objects.rst:8
 msgid ""
@@ -34,18 +34,14 @@ msgid ""
 "field named 'operation_type'. Class called 'Operation' holds convenient "
 "constants for these values as shown below:"
 msgstr ""
-"엔티티를 변경하고 그 결과를 데이터베이스 커밋하면 Continuum은 버전 엔티티에 "
-"어떤 연산(INSERT, UPDATE, DELETE)을 했는가도 기록한다. "
-"연산 유형은 'operation_type'\ 이라는 이름의 정수형 자료로 기록된다. "
-"'Operation' 클래스는 이 값에 대한 상수형을 가지고 있다.:"
 
 #: ../../version_objects.rst:34
 msgid "Version traversal"
-msgstr "버전 추적"
+msgstr ""
 
 #: ../../version_objects.rst:54
 msgid "Changeset"
-msgstr "체인지셋"
+msgstr ""
 
 #: ../../version_objects.rst:56
 msgid ""
@@ -53,8 +49,6 @@ msgid ""
 "object. Each version contains a changeset property which holds a dict of "
 "changed fields in that version."
 msgstr ""
-"Continuum에서는 특정 버전 객체의 체인지셋을 쉽게 얻을 수 있다. 각 버전은 그 버전에서 바뀐 필드의 "
-"딕셔너리를 가진 changeset이라는 속성이 있다."
 
 #: ../../version_objects.rst:92
 msgid ""
@@ -62,12 +56,10 @@ msgid ""
 "With this function you can easily check the changeset of given object in "
 "current transaction."
 msgstr ""
-"SQLAlchemy-Continuum은 changeset이라는 유틸리티 함수도 제공한다. "
-"이 함수를 쓰면 현재 트랜잭션에서 객체의 체인지셋을 쉽게 확인할 수 있다. "
 
 #: ../../version_objects.rst:109
 msgid "Version relationships"
-msgstr "버전 릴레이션쉽"
+msgstr ""
 
 #: ../../version_objects.rst:111
 msgid ""
@@ -75,8 +67,6 @@ msgid ""
 "think version object relations as 'relations of parent object in given "
 "point in time'."
 msgstr ""
-"각 버전 객체는 부모 객체의 모든 릴레이션쉽을 반영한다. "
-"버전 객체가 가지는 릴레이션은 해당 시점에 부모 객체가 가지고 있던 릴레이션이라고 생각하면 된다. "
 
 #: ../../version_objects.rst:113
 msgid ""
