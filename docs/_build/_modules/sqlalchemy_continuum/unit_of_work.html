@@ -1,0 +1,562 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sqlalchemy_continuum.unit_of_work &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="../../genindex.html" />
+    <link rel="search" title="검색" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">모듈 코드</a> &raquo;</li>
+        
+          <li><a href="../sqlalchemy_continuum.html">sqlalchemy_continuum</a> &raquo;</li>
+        
+      <li>sqlalchemy_continuum.unit_of_work</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sqlalchemy_continuum.unit_of_work</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
+
+<span class="kn">import</span> <span class="nn">sqlalchemy</span> <span class="k">as</span> <span class="nn">sa</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy_utils</span> <span class="k">import</span> <span class="n">get_primary_keys</span><span class="p">,</span> <span class="n">identity</span>
+<span class="kn">from</span> <span class="nn">.operation</span> <span class="k">import</span> <span class="n">Operations</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">end_tx_column_name</span><span class="p">,</span>
+    <span class="n">version_class</span><span class="p">,</span>
+    <span class="n">is_session_modified</span><span class="p">,</span>
+    <span class="n">tx_column_name</span><span class="p">,</span>
+    <span class="n">versioned_column_properties</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="UnitOfWork"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork">[문서]</a><span class="k">class</span> <span class="nc">UnitOfWork</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">manager</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+<div class="viewcode-block" id="UnitOfWork.reset"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.reset">[문서]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset the internal state of this UnitOfWork object. Normally this is</span>
+<span class="sd">        called after transaction has been committed or rolled back.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">operations</span> <span class="o">=</span> <span class="n">Operations</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pending_statements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_objs</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.is_modified"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.is_modified">[문서]</a>    <span class="k">def</span> <span class="nf">is_modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return whether or not given session has been modified. Session has been</span>
+<span class="sd">        modified if any versioned property of any version object in given</span>
+<span class="sd">        session has been modified or if any of the plugins returns that</span>
+<span class="sd">        session has been modified.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">is_session_modified</span><span class="p">(</span><span class="n">session</span><span class="p">)</span> <span class="ow">or</span>
+            <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">is_session_modified</span><span class="p">(</span><span class="n">session</span><span class="p">))</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.process_before_flush"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_before_flush">[문서]</a>    <span class="k">def</span> <span class="nf">process_before_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Before flush processor for given session.</span>
+
+<span class="sd">        This method creates a version session which is later on used for the</span>
+<span class="sd">        creation of version objects. It also creates Transaction object for the</span>
+<span class="sd">        current transaction and invokes before_flush template method on all</span>
+<span class="sd">        plugins.</span>
+
+<span class="sd">        If the given session had no relevant modifications regarding versioned</span>
+<span class="sd">        objects this method does nothing.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">session</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_modified</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span>
+                <span class="n">bind</span><span class="o">=</span><span class="n">session</span><span class="o">.</span><span class="n">connection</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_transaction</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">before_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.process_after_flush"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_after_flush">[문서]</a>    <span class="k">def</span> <span class="nf">process_after_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        After flush processor for given session.</span>
+
+<span class="sd">        Creates version objects for all modified versioned parent objects that</span>
+<span class="sd">        were affected during the flush phase.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">session</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span>
+                <span class="n">bind</span><span class="o">=</span><span class="n">session</span><span class="o">.</span><span class="n">connection</span><span class="p">()</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">make_versions</span><span class="p">(</span><span class="n">session</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">transaction_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">plugin</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">plugins</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">plugin</span><span class="o">.</span><span class="n">transaction_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">args</span>
+
+<div class="viewcode-block" id="UnitOfWork.create_transaction"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_transaction">[문서]</a>    <span class="k">def</span> <span class="nf">create_transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create transaction object for given SQLAlchemy session.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_args</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+
+        <span class="n">Transaction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">transaction_cls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span> <span class="o">=</span> <span class="n">Transaction</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span>
+                <span class="n">bind</span><span class="o">=</span><span class="n">session</span><span class="o">.</span><span class="n">connection</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="o">.</span><span class="n">expunge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="p">)</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.get_or_create_version_object"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.get_or_create_version_object">[문서]</a>    <span class="k">def</span> <span class="nf">get_or_create_version_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return version object for given parent object. If no version object</span>
+<span class="sd">        exists for given parent object, create one.</span>
+
+<span class="sd">        :param target: Parent object to create the version object for</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">version_cls</span> <span class="o">=</span> <span class="n">version_class</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="n">version_id</span> <span class="o">=</span> <span class="n">identity</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">)</span>
+        <span class="n">version_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">version_cls</span><span class="p">,</span> <span class="n">version_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">version_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_objs</span><span class="p">:</span>
+            <span class="n">version_obj</span> <span class="o">=</span> <span class="n">version_cls</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version_objs</span><span class="p">[</span><span class="n">version_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">version_obj</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">version_obj</span><span class="p">)</span>
+            <span class="n">tx_column</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+                <span class="n">target</span><span class="p">,</span>
+                <span class="s1">&#39;transaction_column_name&#39;</span>
+            <span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span>
+                <span class="n">version_obj</span><span class="p">,</span>
+                <span class="n">tx_column</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="o">.</span><span class="n">id</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">version_obj</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_objs</span><span class="p">[</span><span class="n">version_key</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.process_operation"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_operation">[문서]</a>    <span class="k">def</span> <span class="nf">process_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process given operation object. The operation processing has x stages:</span>
+
+<span class="sd">        1. Get or create a version object for given parent object</span>
+<span class="sd">        2. Assign the operation type for this object</span>
+<span class="sd">        3. Invoke listeners</span>
+<span class="sd">        4. Update version validity in case validity strategy is used</span>
+<span class="sd">        5. Mark operation as processed</span>
+
+<span class="sd">        :param operation: Operation object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">target</span>
+        <span class="n">version_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_or_create_version_object</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="n">version_obj</span><span class="o">.</span><span class="n">operation_type</span> <span class="o">=</span> <span class="n">operation</span><span class="o">.</span><span class="n">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assign_attributes</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">version_obj</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">after_create_version_object</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">version_obj</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;strategy&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;validity&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_version_validity</span><span class="p">(</span>
+                <span class="n">target</span><span class="p">,</span>
+                <span class="n">version_obj</span>
+            <span class="p">)</span>
+        <span class="n">operation</span><span class="o">.</span><span class="n">processed</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.create_version_objects"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_version_objects">[문서]</a>    <span class="k">def</span> <span class="nf">create_version_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create version objects for given session based on operations collected</span>
+<span class="sd">        by insert, update and deleted trackers.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;versioning&#39;</span><span class="p">]</span> <span class="ow">or</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;native_versioning&#39;</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">operation</span> <span class="ow">in</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">operations</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">operation</span><span class="o">.</span><span class="n">processed</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s1">&#39;Current transaction not available.&#39;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_operation</span><span class="p">(</span><span class="n">operation</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.version_validity_subquery"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.version_validity_subquery">[문서]</a>    <span class="k">def</span> <span class="nf">version_validity_subquery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">version_obj</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the subquery needed by :func:`update_version_validity`.</span>
+
+<span class="sd">        This method is only used when using &#39;validity&#39; versioning strategy.</span>
+
+<span class="sd">        :param parent: SQLAlchemy declarative parent object</span>
+<span class="sd">        :parem version_obj: SQLAlchemy declarative version object</span>
+
+<span class="sd">        .. seealso:: :func:`update_version_validity`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fetcher</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">fetcher</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">object_session</span><span class="p">(</span><span class="n">version_obj</span><span class="p">)</span>
+
+        <span class="n">subquery</span> <span class="o">=</span> <span class="n">fetcher</span><span class="o">.</span><span class="n">_transaction_id_subquery</span><span class="p">(</span>
+            <span class="n">version_obj</span><span class="p">,</span>
+            <span class="n">next_or_prev</span><span class="o">=</span><span class="s1">&#39;prev&#39;</span><span class="p">,</span>
+            <span class="n">alias</span><span class="o">=</span><span class="n">alias</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">connection</span><span class="p">()</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dialect</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;mysql&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">sa</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="s1">&#39;max_1&#39;</span><span class="p">)],</span>
+                <span class="n">from_obj</span><span class="o">=</span><span class="p">[</span>
+                    <span class="n">sa</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">expression</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="n">subquery</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;subquery&#39;</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">subquery</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.update_version_validity"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.update_version_validity">[문서]</a>    <span class="k">def</span> <span class="nf">update_version_validity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">version_obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates previous version object end_transaction_id based on given</span>
+<span class="sd">        parent object and newly created version object.</span>
+
+<span class="sd">        This method is only used when using &#39;validity&#39; versioning strategy.</span>
+
+<span class="sd">        :param parent: SQLAlchemy declarative parent object</span>
+<span class="sd">        :parem version_obj: SQLAlchemy declarative version object</span>
+
+<span class="sd">        .. seealso:: :func:`version_validity_subquery`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">object_session</span><span class="p">(</span><span class="n">version_obj</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">class_</span> <span class="ow">in</span> <span class="n">version_obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">class_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">parent_class_map</span><span class="p">:</span>
+
+                <span class="n">subquery</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_validity_subquery</span><span class="p">(</span>
+                    <span class="n">parent</span><span class="p">,</span>
+                    <span class="n">version_obj</span><span class="p">,</span>
+                    <span class="n">alias</span><span class="o">=</span><span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">aliased</span><span class="p">(</span><span class="n">class_</span><span class="o">.</span><span class="n">__table__</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">class_</span><span class="o">.</span><span class="n">__table__</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                        <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+                            <span class="nb">getattr</span><span class="p">(</span>
+                                <span class="n">class_</span><span class="p">,</span>
+                                <span class="n">tx_column_name</span><span class="p">(</span><span class="n">version_obj</span><span class="p">)</span>
+                            <span class="p">)</span> <span class="o">==</span> <span class="n">subquery</span><span class="p">,</span>
+                            <span class="o">*</span><span class="p">[</span>
+                                <span class="nb">getattr</span><span class="p">(</span><span class="n">version_obj</span><span class="p">,</span> <span class="n">pk</span><span class="p">)</span> <span class="o">==</span>
+                                <span class="nb">getattr</span><span class="p">(</span><span class="n">class_</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="n">pk</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">get_primary_keys</span><span class="p">(</span><span class="n">class_</span><span class="p">)</span>
+                                <span class="k">if</span> <span class="n">pk</span> <span class="o">!=</span> <span class="n">tx_column_name</span><span class="p">(</span><span class="n">class_</span><span class="p">)</span>
+                            <span class="p">]</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">query</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="n">end_tx_column_name</span><span class="p">(</span><span class="n">version_obj</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="o">.</span><span class="n">id</span>
+                    <span class="p">},</span>
+                    <span class="n">synchronize_session</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.create_association_versions"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_association_versions">[문서]</a>    <span class="k">def</span> <span class="nf">create_association_versions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates association table version records for given session.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">statements</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pending_statements</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">stmt</span> <span class="ow">in</span> <span class="n">statements</span><span class="p">:</span>
+            <span class="n">stmt</span> <span class="o">=</span> <span class="n">stmt</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+                <span class="o">**</span><span class="p">{</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;transaction_column_name&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_transaction</span><span class="o">.</span><span class="n">id</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pending_statements</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="UnitOfWork.make_versions"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.make_versions">[문서]</a>    <span class="k">def</span> <span class="nf">make_versions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create transaction, transaction changes records, version objects.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;versioning&#39;</span><span class="p">]:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_statements</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_association_versions</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">operations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">before_create_version_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_version_objects</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">after_create_version_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_changes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return whether or not this unit of work has changes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">operations</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_statements</span>
+
+<div class="viewcode-block" id="UnitOfWork.assign_attributes"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.assign_attributes">[문서]</a>    <span class="k">def</span> <span class="nf">assign_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_obj</span><span class="p">,</span> <span class="n">version_obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assign attributes values from parent object to version object.</span>
+
+<span class="sd">        :param parent_obj:</span>
+<span class="sd">            Parent object to get the attribute values from</span>
+<span class="sd">        :param version_obj:</span>
+<span class="sd">            Version object to assign the attribute values to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">versioned_column_properties</span><span class="p">(</span><span class="n">parent_obj</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">parent_obj</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">ObjectDeletedError</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">version_obj</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="../../_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

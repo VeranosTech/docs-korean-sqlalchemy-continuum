@@ -1,0 +1,678 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sqlalchemy_continuum.utils &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="../../genindex.html" />
+    <link rel="search" title="검색" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">모듈 코드</a> &raquo;</li>
+        
+          <li><a href="../sqlalchemy_continuum.html">sqlalchemy_continuum</a> &raquo;</li>
+        
+      <li>sqlalchemy_continuum.utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sqlalchemy_continuum.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="k">import</span> <span class="n">isclass</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">import</span> <span class="nn">sqlalchemy</span> <span class="k">as</span> <span class="nn">sa</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.attributes</span> <span class="k">import</span> <span class="n">get_history</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm.util</span> <span class="k">import</span> <span class="n">AliasedClass</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy_utils.functions</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">get_primary_keys</span><span class="p">,</span>
+    <span class="n">identity</span><span class="p">,</span>
+    <span class="n">naturally_equivalent</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.exc</span> <span class="k">import</span> <span class="n">ClassNotVersioned</span>
+
+
+<div class="viewcode-block" id="get_versioning_manager"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.get_versioning_manager">[문서]</a><span class="k">def</span> <span class="nf">get_versioning_manager</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the associated SQLAlchemy-Continuum VersioningManager for given</span>
+<span class="sd">    SQLAlchemy declarative model class or object.</span>
+
+<span class="sd">    :param obj_or_class: SQLAlchemy declarative model object or class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">,</span> <span class="n">AliasedClass</span><span class="p">):</span>
+        <span class="n">obj_or_class</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">)</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">class_</span>
+    <span class="bp">cls</span> <span class="o">=</span> <span class="n">obj_or_class</span> <span class="k">if</span> <span class="n">isclass</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">)</span> <span class="k">else</span> <span class="n">obj_or_class</span><span class="o">.</span><span class="vm">__class__</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__versioning_manager__</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ClassNotVersioned</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">option</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">,</span> <span class="n">option_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the option value of given option for given versioned object or</span>
+<span class="sd">    class.</span>
+
+<span class="sd">    :param obj_or_class: SQLAlchemy declarative model object or class</span>
+<span class="sd">    :param option_name: The name of an option to return</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">,</span> <span class="n">AliasedClass</span><span class="p">):</span>
+        <span class="n">obj_or_class</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">)</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">class_</span>
+    <span class="bp">cls</span> <span class="o">=</span> <span class="n">obj_or_class</span> <span class="k">if</span> <span class="n">isclass</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">)</span> <span class="k">else</span> <span class="n">obj_or_class</span><span class="o">.</span><span class="vm">__class__</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;__versioned__&#39;</span><span class="p">):</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">parent_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_versioning_manager</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">option_name</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">tx_column_name</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">option</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">end_tx_column_name</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">option</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;end_transaction_column_name&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">end_tx_attr</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span>
+        <span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span>
+        <span class="n">end_tx_column_name</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="parent_class"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.parent_class">[문서]</a><span class="k">def</span> <span class="nf">parent_class</span><span class="p">(</span><span class="n">version_cls</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the parent class for given version model class.</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        parent_class(ArticleVersion)  # Article class</span>
+
+
+<span class="sd">    :param model: SQLAlchemy declarative version model class</span>
+
+<span class="sd">    .. seealso:: :func:`version_class`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">get_versioning_manager</span><span class="p">(</span><span class="n">version_cls</span><span class="p">)</span><span class="o">.</span><span class="n">parent_class_map</span><span class="p">[</span><span class="n">version_cls</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="transaction_class"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.transaction_class">[문서]</a><span class="k">def</span> <span class="nf">transaction_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the associated transaction class for given versioned SQLAlchemy</span>
+<span class="sd">    declarative class or version class.</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        from sqlalchemy_continuum import transaction_class</span>
+
+
+<span class="sd">        transaction_class(Article)  # Transaction class</span>
+
+<span class="sd">    :param cls: SQLAlchemy versioned declarative class or version model class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">get_versioning_manager</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">transaction_cls</span></div>
+
+
+<span class="k">def</span> <span class="nf">version_obj</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">parent_obj</span><span class="p">):</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">get_versioning_manager</span><span class="p">(</span><span class="n">parent_obj</span><span class="p">)</span>
+    <span class="n">uow</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">unit_of_work</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">version_obj</span> <span class="ow">in</span> <span class="n">uow</span><span class="o">.</span><span class="n">version_session</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">parent_class</span><span class="p">(</span><span class="n">version_obj</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span> <span class="o">==</span> <span class="n">parent_obj</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">and</span>
+            <span class="n">identity</span><span class="p">(</span><span class="n">version_obj</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">identity</span><span class="p">(</span><span class="n">parent_obj</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="n">version_obj</span>
+
+
+<div class="viewcode-block" id="version_class"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.version_class">[문서]</a><span class="k">def</span> <span class="nf">version_class</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the version class for given SQLAlchemy declarative model class.</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        version_class(Article)  # ArticleVersion class</span>
+
+
+<span class="sd">    :param model: SQLAlchemy declarative model class</span>
+
+<span class="sd">    .. seealso:: :func:`parent_class`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">get_versioning_manager</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">version_class_map</span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="version_table"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.version_table">[문서]</a><span class="k">def</span> <span class="nf">version_table</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return associated version table for given SQLAlchemy Table object.</span>
+
+<span class="sd">    :param table: SQLAlchemy Table object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">schema</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">schema</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_version&#39;</span>
+        <span class="p">]</span>
+    <span class="k">elif</span> <span class="n">table</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">schema</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">schema</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_version&#39;</span>
+        <span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_version&#39;</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="versioned_objects"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.versioned_objects">[문서]</a><span class="k">def</span> <span class="nf">versioned_objects</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return all versioned objects in given session.</span>
+
+<span class="sd">    :param session: SQLAlchemy session object</span>
+
+<span class="sd">    .. seealso:: :func:`is_versioned`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">session</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_versioned</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">obj</span></div>
+
+
+<div class="viewcode-block" id="is_versioned"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.is_versioned">[문서]</a><span class="k">def</span> <span class="nf">is_versioned</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return whether or not given object is versioned.</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        is_versioned(Article)  # True</span>
+
+<span class="sd">        article = Article()</span>
+
+<span class="sd">        is_versioned(article)  # True</span>
+
+
+<span class="sd">    :param obj_or_class:</span>
+<span class="sd">        SQLAlchemy declarative model object or SQLAlchemy declarative model</span>
+<span class="sd">        class.</span>
+
+<span class="sd">    .. seealso:: :func:`versioned_objects`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">,</span> <span class="s1">&#39;__versioned__&#39;</span><span class="p">)</span> <span class="ow">and</span>
+            <span class="n">get_versioning_manager</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">)</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+                <span class="n">obj_or_class</span><span class="p">,</span> <span class="s1">&#39;versioning&#39;</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="n">ClassNotVersioned</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<span class="k">def</span> <span class="nf">versioned_column_properties</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return all versioned column properties for given versioned SQLAlchemy</span>
+<span class="sd">    declarative model object.</span>
+
+<span class="sd">    :param obj: SQLAlchemy declarative model object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">get_versioning_manager</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">)</span>
+
+    <span class="bp">cls</span> <span class="o">=</span> <span class="n">obj_or_class</span> <span class="k">if</span> <span class="n">isclass</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">)</span> <span class="k">else</span> <span class="n">obj_or_class</span><span class="o">.</span><span class="vm">__class__</span>
+
+    <span class="n">mapper</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">mapper</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Ignores non table columns</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_table_column</span><span class="p">(</span><span class="n">column</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">manager</span><span class="o">.</span><span class="n">is_excluded_property</span><span class="p">(</span><span class="n">obj_or_class</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">attrs</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">versioned_relationships</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">versioned_column_keys</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return all versioned relationships for given versioned SQLAlchemy</span>
+<span class="sd">    declarative model object.</span>
+
+<span class="sd">    :param obj: SQLAlchemy declarative model object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span><span class="o">.</span><span class="n">relationships</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">key</span> <span class="ow">in</span> <span class="n">versioned_column_keys</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">prop</span><span class="o">.</span><span class="n">local_columns</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">prop</span>
+
+
+<div class="viewcode-block" id="vacuum"><a class="viewcode-back" href="../../schema.html#sqlalchemy_continuum.vacuum">[문서]</a><span class="k">def</span> <span class="nf">vacuum</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">yield_per</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    When making structural changes to version tables (for example dropping</span>
+<span class="sd">    columns) there are sometimes situations where some old version records</span>
+<span class="sd">    become futile.</span>
+
+<span class="sd">    Vacuum deletes all futile version rows which had no changes compared to</span>
+<span class="sd">    previous version.</span>
+
+
+<span class="sd">    ::</span>
+
+
+<span class="sd">        from sqlalchemy_continuum import vacuum</span>
+
+
+<span class="sd">        vacuum(session, User)  # vacuums user version</span>
+
+
+<span class="sd">    :param session: SQLAlchemy session object</span>
+<span class="sd">    :param model: SQLAlchemy declarative model class</span>
+<span class="sd">    :param yield_per: how many rows to process at a time</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">version_cls</span> <span class="o">=</span> <span class="n">version_class</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">versions</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">version_cls</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">option</span><span class="p">(</span><span class="n">version_cls</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">))</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">yield_per</span><span class="p">(</span><span class="n">yield_per</span><span class="p">)</span>
+
+    <span class="n">primary_key_col</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspection</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">primary_key</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">for</span> <span class="n">version</span> <span class="ow">in</span> <span class="n">query</span><span class="p">:</span>
+        <span class="n">version_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="n">primary_key_col</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">versions</span><span class="p">[</span><span class="n">version_id</span><span class="p">]:</span>
+            <span class="n">prev_version</span> <span class="o">=</span> <span class="n">versions</span><span class="p">[</span><span class="n">version_id</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">naturally_equivalent</span><span class="p">(</span><span class="n">prev_version</span><span class="p">,</span> <span class="n">version</span><span class="p">):</span>
+                <span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">version</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">versions</span><span class="p">[</span><span class="n">version_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">version</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">is_table_column</span><span class="p">(</span><span class="n">column</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return wheter of not give field is a column over the database table.</span>
+
+<span class="sd">    :param column: SQLAclhemy model field.</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">is_internal_column</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">column_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return whether or not given column of given SQLAlchemy declarative classs</span>
+<span class="sd">    is considered an internal column (a column whose purpose is mainly</span>
+<span class="sd">    for SA-Continuum&#39;s internal use).</span>
+
+<span class="sd">    :param version_obj: SQLAlchemy declarative class</span>
+<span class="sd">    :param column_name: Name of the column</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">column_name</span> <span class="ow">in</span> <span class="p">(</span>
+        <span class="n">option</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">),</span>
+        <span class="n">option</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;end_transaction_column_name&#39;</span><span class="p">),</span>
+        <span class="n">option</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;operation_type_column_name&#39;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="is_modified_or_deleted"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.is_modified_or_deleted">[문서]</a><span class="k">def</span> <span class="nf">is_modified_or_deleted</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return whether or not some of the versioned properties of given SQLAlchemy</span>
+<span class="sd">    declarative object have been modified or if the object has been deleted.</span>
+
+<span class="sd">    :param obj: SQLAlchemy declarative model object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">object_session</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">is_versioned</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="n">is_modified</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span>
+        <span class="n">obj</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">session</span><span class="o">.</span><span class="n">deleted</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">new</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="is_modified"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.is_modified">[문서]</a><span class="k">def</span> <span class="nf">is_modified</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return whether or not the versioned properties of given object have been</span>
+<span class="sd">    modified.</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        article = Article()</span>
+
+<span class="sd">        is_modified(article)  # False</span>
+
+<span class="sd">        article.name = &#39;Something&#39;</span>
+
+<span class="sd">        is_modified(article)  # True</span>
+
+
+<span class="sd">    :param obj: SQLAlchemy declarative model object</span>
+
+<span class="sd">    .. seealso:: :func:`is_modified_or_deleted`</span>
+<span class="sd">    .. seealso:: :func:`is_session_modified`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">versioned_column_keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">prop</span><span class="o">.</span><span class="n">key</span> <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">versioned_column_properties</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">versioned_relationship_keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">prop</span><span class="o">.</span><span class="n">key</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">versioned_relationships</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">versioned_column_keys</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">versioned_column_keys</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">has_changes</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">versioned_relationship_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">has_changes</span><span class="p">():</span>
+                <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="is_session_modified"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.is_session_modified">[문서]</a><span class="k">def</span> <span class="nf">is_session_modified</span><span class="p">(</span><span class="n">session</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return whether or not any of the versioned objects in given session have</span>
+<span class="sd">    been either modified or deleted.</span>
+
+<span class="sd">    :param session: SQLAlchemy session object</span>
+
+<span class="sd">    .. seealso:: :func:`is_versioned`</span>
+<span class="sd">    .. seealso:: :func:`versioned_objects`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
+        <span class="n">is_modified_or_deleted</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">versioned_objects</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="count_versions"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.count_versions">[문서]</a><span class="k">def</span> <span class="nf">count_versions</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the number of versions given object has. This function works even</span>
+<span class="sd">    when obj has `create_models` and `create_tables` versioned settings</span>
+<span class="sd">    disabled.</span>
+
+<span class="sd">    ::</span>
+
+<span class="sd">        article = Article(name=u&#39;Some article&#39;)</span>
+
+<span class="sd">        count_versions(article)  # 0</span>
+
+<span class="sd">        session.add(article)</span>
+<span class="sd">        session.commit()</span>
+
+<span class="sd">        count_versions(article)  # 1</span>
+
+
+<span class="sd">    :param obj: SQLAlchemy declarative model object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">object_session</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># If object is transient, we assume it has no version history.</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">get_versioning_manager</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="n">table_name</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;table_name&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">obj</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">criteria</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> = </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pk</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">pk</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">get_primary_keys</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;SELECT COUNT(1) FROM </span><span class="si">%s</span><span class="s1"> WHERE </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">table_name</span><span class="p">,</span>
+        <span class="s1">&#39; AND &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">criteria</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">scalar</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="changeset"><a class="viewcode-back" href="../../utilities.html#sqlalchemy_continuum.changeset">[문서]</a><span class="k">def</span> <span class="nf">changeset</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a humanized changeset for given SQLAlchemy declarative object. With</span>
+<span class="sd">    this function you can easily check the changeset of given object in current</span>
+<span class="sd">    transaction.</span>
+
+<span class="sd">    ::</span>
+
+
+<span class="sd">        from sqlalchemy_continuum import changeset</span>
+
+
+<span class="sd">        article = Article(name=u&#39;Some article&#39;)</span>
+<span class="sd">        changeset(article)</span>
+<span class="sd">        # {&#39;name&#39;: [u&#39;Some article&#39;, None]}</span>
+
+<span class="sd">    :param obj: SQLAlchemy declarative model object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">object_session</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session</span> <span class="ow">and</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">session</span><span class="o">.</span><span class="n">deleted</span><span class="p">:</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                   <span class="k">if</span> <span class="n">is_table_column</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span>
+
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">column</span><span class="o">.</span><span class="n">primary_key</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">column</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">column</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">column</span><span class="o">.</span><span class="n">key</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">__mapper__</span><span class="o">.</span><span class="n">iterate_properties</span><span class="p">:</span>
+            <span class="n">history</span> <span class="o">=</span> <span class="n">get_history</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">history</span><span class="o">.</span><span class="n">has_changes</span><span class="p">():</span>
+                <span class="n">old_value</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">deleted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">history</span><span class="o">.</span><span class="n">deleted</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">new_value</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">added</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">history</span><span class="o">.</span><span class="n">added</span> <span class="k">else</span> <span class="kc">None</span>
+
+                <span class="k">if</span> <span class="n">new_value</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">prop</span><span class="o">.</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_value</span><span class="p">,</span> <span class="n">old_value</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+
+<span class="k">class</span> <span class="nc">VersioningClauseAdapter</span><span class="p">(</span><span class="n">sa</span><span class="o">.</span><span class="n">sql</span><span class="o">.</span><span class="n">visitors</span><span class="o">.</span><span class="n">ReplacingCloningVisitor</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">sa</span><span class="o">.</span><span class="n">Column</span><span class="p">):</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">version_table</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">table</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">adapt_columns</span><span class="p">(</span><span class="n">expr</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">VersioningClauseAdapter</span><span class="p">()</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="../../_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

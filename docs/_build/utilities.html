@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Utilities &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" />
+    <link rel="next" title="License" href="license.html" />
+    <link rel="prev" title="Alembic migrations" href="alembic.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#changeset">changeset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#count-versions">count_versions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#get-versioning-manager">get_versioning_manager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#is-modified">is_modified</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#is-modified-or-deleted">is_modified_or_deleted</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#is-session-modified">is_session_modified</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#is-versioned">is_versioned</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parent-class">parent_class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transaction-class">transaction_class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-class">version_class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#versioned-objects">versioned_objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-table">version_table</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Utilities</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/utilities.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-sqlalchemy_continuum.utils">
+<span id="utilities"></span><h1>Utilities<a class="headerlink" href="#module-sqlalchemy_continuum.utils" title="제목 주소">¶</a></h1>
+<div class="section" id="changeset">
+<h2>changeset<a class="headerlink" href="#changeset" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.changeset">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">changeset</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#changeset"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.changeset" title="정의 주소">¶</a></dt>
+<dd><p>Return a humanized changeset for given SQLAlchemy declarative object. With
+this function you can easily check the changeset of given object in current
+transaction.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy_continuum</span> <span class="k">import</span> <span class="n">changeset</span>
+
+
+<span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Some article&#39;</span><span class="p">)</span>
+<span class="n">changeset</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+<span class="c1"># {&#39;name&#39;: [u&#39;Some article&#39;, None]}</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>obj</strong> -- SQLAlchemy declarative model object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="count-versions">
+<h2>count_versions<a class="headerlink" href="#count-versions" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.count_versions">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">count_versions</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#count_versions"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.count_versions" title="정의 주소">¶</a></dt>
+<dd><p>Return the number of versions given object has. This function works even
+when obj has <cite>create_models</cite> and <cite>create_tables</cite> versioned settings
+disabled.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Some article&#39;</span><span class="p">)</span>
+
+<span class="n">count_versions</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>  <span class="c1"># 0</span>
+
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="n">count_versions</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>  <span class="c1"># 1</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>obj</strong> -- SQLAlchemy declarative model object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="get-versioning-manager">
+<h2>get_versioning_manager<a class="headerlink" href="#get-versioning-manager" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.get_versioning_manager">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">get_versioning_manager</code><span class="sig-paren">(</span><em>obj_or_class</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#get_versioning_manager"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.get_versioning_manager" title="정의 주소">¶</a></dt>
+<dd><p>Return the associated SQLAlchemy-Continuum VersioningManager for given
+SQLAlchemy declarative model class or object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>obj_or_class</strong> -- SQLAlchemy declarative model object or class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="is-modified">
+<h2>is_modified<a class="headerlink" href="#is-modified" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.is_modified">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">is_modified</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#is_modified"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.is_modified" title="정의 주소">¶</a></dt>
+<dd><p>Return whether or not the versioned properties of given object have been
+modified.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="p">()</span>
+
+<span class="n">is_modified</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>  <span class="c1"># False</span>
+
+<span class="n">article</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Something&#39;</span>
+
+<span class="n">is_modified</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>  <span class="c1"># True</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>obj</strong> -- SQLAlchemy declarative model object</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.utils.is_modified_or_deleted" title="sqlalchemy_continuum.utils.is_modified_or_deleted"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_modified_or_deleted()</span></code></a></p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.utils.is_session_modified" title="sqlalchemy_continuum.utils.is_session_modified"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_session_modified()</span></code></a></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="is-modified-or-deleted">
+<h2>is_modified_or_deleted<a class="headerlink" href="#is-modified-or-deleted" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.is_modified_or_deleted">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">is_modified_or_deleted</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#is_modified_or_deleted"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.is_modified_or_deleted" title="정의 주소">¶</a></dt>
+<dd><p>Return whether or not some of the versioned properties of given SQLAlchemy
+declarative object have been modified or if the object has been deleted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>obj</strong> -- SQLAlchemy declarative model object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="is-session-modified">
+<h2>is_session_modified<a class="headerlink" href="#is-session-modified" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.is_session_modified">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">is_session_modified</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#is_session_modified"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.is_session_modified" title="정의 주소">¶</a></dt>
+<dd><p>Return whether or not any of the versioned objects in given session have
+been either modified or deleted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.utils.is_versioned" title="sqlalchemy_continuum.utils.is_versioned"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_versioned()</span></code></a></p>
+</div>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.utils.versioned_objects" title="sqlalchemy_continuum.utils.versioned_objects"><code class="xref py py-func docutils literal notranslate"><span class="pre">versioned_objects()</span></code></a></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="is-versioned">
+<h2>is_versioned<a class="headerlink" href="#is-versioned" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.is_versioned">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">is_versioned</code><span class="sig-paren">(</span><em>obj_or_class</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#is_versioned"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.is_versioned" title="정의 주소">¶</a></dt>
+<dd><p>Return whether or not given object is versioned.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">is_versioned</span><span class="p">(</span><span class="n">Article</span><span class="p">)</span>  <span class="c1"># True</span>
+
+<span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="p">()</span>
+
+<span class="n">is_versioned</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>  <span class="c1"># True</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>obj_or_class</strong> -- SQLAlchemy declarative model object or SQLAlchemy declarative model
+class.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.utils.versioned_objects" title="sqlalchemy_continuum.utils.versioned_objects"><code class="xref py py-func docutils literal notranslate"><span class="pre">versioned_objects()</span></code></a></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="parent-class">
+<h2>parent_class<a class="headerlink" href="#parent-class" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.parent_class">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">parent_class</code><span class="sig-paren">(</span><em>version_cls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#parent_class"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.parent_class" title="정의 주소">¶</a></dt>
+<dd><p>Return the parent class for given version model class.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parent_class</span><span class="p">(</span><span class="n">ArticleVersion</span><span class="p">)</span>  <span class="c1"># Article class</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>model</strong> -- SQLAlchemy declarative version model class</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.utils.version_class" title="sqlalchemy_continuum.utils.version_class"><code class="xref py py-func docutils literal notranslate"><span class="pre">version_class()</span></code></a></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="transaction-class">
+<h2>transaction_class<a class="headerlink" href="#transaction-class" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.transaction_class">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">transaction_class</code><span class="sig-paren">(</span><em>cls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#transaction_class"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.transaction_class" title="정의 주소">¶</a></dt>
+<dd><p>Return the associated transaction class for given versioned SQLAlchemy
+declarative class or version class.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy_continuum</span> <span class="k">import</span> <span class="n">transaction_class</span>
+
+
+<span class="n">transaction_class</span><span class="p">(</span><span class="n">Article</span><span class="p">)</span>  <span class="c1"># Transaction class</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>cls</strong> -- SQLAlchemy versioned declarative class or version model class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="version-class">
+<h2>version_class<a class="headerlink" href="#version-class" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.version_class">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">version_class</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#version_class"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.version_class" title="정의 주소">¶</a></dt>
+<dd><p>Return the version class for given SQLAlchemy declarative model class.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">version_class</span><span class="p">(</span><span class="n">Article</span><span class="p">)</span>  <span class="c1"># ArticleVersion class</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>model</strong> -- SQLAlchemy declarative model class</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.utils.parent_class" title="sqlalchemy_continuum.utils.parent_class"><code class="xref py py-func docutils literal notranslate"><span class="pre">parent_class()</span></code></a></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="versioned-objects">
+<h2>versioned_objects<a class="headerlink" href="#versioned-objects" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.versioned_objects">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">versioned_objects</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#versioned_objects"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.versioned_objects" title="정의 주소">¶</a></dt>
+<dd><p>Return all versioned objects in given session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.utils.is_versioned" title="sqlalchemy_continuum.utils.is_versioned"><code class="xref py py-func docutils literal notranslate"><span class="pre">is_versioned()</span></code></a></p>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="version-table">
+<h2>version_table<a class="headerlink" href="#version-table" title="제목 주소">¶</a></h2>
+<dl class="function">
+<dt id="sqlalchemy_continuum.utils.version_table">
+<code class="descclassname">sqlalchemy_continuum.utils.</code><code class="descname">version_table</code><span class="sig-paren">(</span><em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/utils.html#version_table"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.utils.version_table" title="정의 주소">¶</a></dt>
+<dd><p>Return associated version table for given SQLAlchemy Table object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>table</strong> -- SQLAlchemy Table object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="license.html" class="btn btn-neutral float-right" title="License" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="alembic.html" class="btn btn-neutral" title="Alembic migrations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

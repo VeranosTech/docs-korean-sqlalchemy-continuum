@@ -1,0 +1,568 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Plugins &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="Native versioning" href="native_versioning.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plugins</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-plugins">Using plugins</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sqlalchemy_continuum.plugins.activity">Activity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#limitations">Limitations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-activities">Create activities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#update-activities">Update activities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#delete-activities">Delete activities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#local-version-histories-using-targets">Local version histories using targets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sqlalchemy_continuum.plugins.flask">Flask</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sqlalchemy_continuum.plugins.property_mod_tracker">PropertyModTracker</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sqlalchemy_continuum.plugins.transaction_changes">TransactionChanges</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-sqlalchemy_continuum.plugins.transaction_meta">TransactionMeta</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Plugins</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/plugins.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="plugins">
+<h1>Plugins<a class="headerlink" href="#plugins" title="제목 주소">¶</a></h1>
+<div class="section" id="using-plugins">
+<h2>Using plugins<a class="headerlink" href="#using-plugins" title="제목 주소">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy_continuum.plugins</span> <span class="k">import</span> <span class="n">PropertyModTrackerPlugin</span>
+
+
+<span class="n">versioning_manager</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PropertyModTrackerPlugin</span><span class="p">())</span>
+
+
+<span class="n">versioning_manager</span><span class="o">.</span><span class="n">plugins</span>  <span class="c1"># &lt;PluginCollection [...]&gt;</span>
+
+<span class="c1"># You can also remove plugin</span>
+
+<span class="k">del</span> <span class="n">versioning_manager</span><span class="o">.</span><span class="n">plugins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-sqlalchemy_continuum.plugins.activity">
+<span id="activity"></span><h2>Activity<a class="headerlink" href="#module-sqlalchemy_continuum.plugins.activity" title="제목 주소">¶</a></h2>
+<p>The ActivityPlugin is the most powerful plugin for tracking changes of
+individual entities. If you use ActivityPlugin you probably don't need to use
+TransactionChanges nor TransactionMeta plugins.</p>
+<p>You can initalize the ActivityPlugin by adding it to versioning manager.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">activity_plugin</span> <span class="o">=</span> <span class="n">ActivityPlugin</span><span class="p">()</span>
+
+<span class="n">make_versioned</span><span class="p">(</span><span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">activity_plugin</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>ActivityPlugin uses single database table for tracking activities. This table
+follows the data structure in <a class="reference external" href="http://www.activitystrea.ms">activity stream specification</a>, but it comes
+with a nice twist:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="15%" />
+<col width="65%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Column</th>
+<th class="head">Type</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>id</td>
+<td>BigInteger</td>
+<td>The primary key of the activity</td>
+</tr>
+<tr class="row-odd"><td>verb</td>
+<td>Unicode</td>
+<td>Verb defines the action of the activity</td>
+</tr>
+<tr class="row-even"><td>data</td>
+<td>JSON</td>
+<td>Additional data for the activity in JSON format</td>
+</tr>
+<tr class="row-odd"><td>transaction_id</td>
+<td>BigInteger</td>
+<td>The transaction this activity was associated
+with</td>
+</tr>
+<tr class="row-even"><td>object_id</td>
+<td>BigInteger</td>
+<td>The primary key of the object. Object can be
+any entity which has an integer as primary key.</td>
+</tr>
+<tr class="row-odd"><td>object_type</td>
+<td>Unicode</td>
+<td>The type of the object (class name as string)</td>
+</tr>
+<tr class="row-even"><td>object_tx_id</td>
+<td>BigInteger</td>
+<td>The last transaction_id associated with the
+object. This is used for efficiently fetching
+the object version associated with this
+activity.</td>
+</tr>
+<tr class="row-odd"><td>target_id</td>
+<td>BigInteger</td>
+<td>The primary key of the target. Target can be
+any entity which has an integer as primary key.</td>
+</tr>
+<tr class="row-even"><td>target_type</td>
+<td>Unicode</td>
+<td>The of the target (class name as string)</td>
+</tr>
+<tr class="row-odd"><td>target_tx_id</td>
+<td>BigInteger</td>
+<td>The last transaction_id associated with the
+target.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Each Activity has relationships to actor, object and target but it also holds
+information about the associated transaction and about the last associated
+transactions with the target and object. This allows each activity to also have
+object_version and target_version relationships for introspecting what those
+objects and targets were in given point in time. All these relationship
+properties use <a class="reference external" href="https://sqlalchemy-utils.readthedocs.io/en/latest/generic_relationship.html">generic relationships</a> of the SQLAlchemy-Utils package.</p>
+<div class="section" id="limitations">
+<h3>Limitations<a class="headerlink" href="#limitations" title="제목 주소">¶</a></h3>
+<p>Currently all changes to parent models must be flushed or committed before
+creating activities. This is due to a fact that there is still no dependency
+processors for generic relationships. So when you create activities and assign
+objects / targets for those please remember to flush the session before
+creating an activity:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Some article&#39;</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>  <span class="c1"># &lt;- IMPORTANT!</span>
+<span class="n">first_activity</span> <span class="o">=</span> <span class="n">Activity</span><span class="p">(</span><span class="n">verb</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="nb">object</span><span class="o">=</span><span class="n">article</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">first_activity</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Targets and objects of given activity must have an integer primary key
+column id.</p>
+</div>
+<div class="section" id="create-activities">
+<h3>Create activities<a class="headerlink" href="#create-activities" title="제목 주소">¶</a></h3>
+<p>Once your models have been configured you can get the Activity model from the
+ActivityPlugin class with activity_cls property:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Activity</span> <span class="o">=</span> <span class="n">activity_plugin</span><span class="o">.</span><span class="n">activity_cls</span>
+</pre></div>
+</div>
+<p>Now let's say we have model called Article and Category. Each Article has one
+Category. Activities should be created along with the changes you make on
+these models.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Some article&#39;</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="n">first_activity</span> <span class="o">=</span> <span class="n">Activity</span><span class="p">(</span><span class="n">verb</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;create&#39;</span><span class="p">,</span> <span class="nb">object</span><span class="o">=</span><span class="n">article</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">first_activity</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Current transaction gets automatically assigned to activity object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">first_activity</span><span class="o">.</span><span class="n">transaction</span>  <span class="c1"># Transaction object</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="update-activities">
+<h3>Update activities<a class="headerlink" href="#update-activities" title="제목 주소">¶</a></h3>
+<p>The object property of the Activity object holds the current object and the
+object_version holds the object version at the time when the activity was
+created.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">article</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="sa">u</span><span class="s1">&#39;Some article updated!&#39;</span>
+<span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="n">second_activity</span> <span class="o">=</span> <span class="n">Activity</span><span class="p">(</span><span class="n">verb</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;update&#39;</span><span class="p">,</span> <span class="nb">object</span><span class="o">=</span><span class="n">article</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">second_activity</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="n">second_activity</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># u&#39;Some article updated!&#39;</span>
+<span class="n">first_activity</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># u&#39;Some article updated!&#39;</span>
+
+<span class="n">first_activity</span><span class="o">.</span><span class="n">object_version</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># u&#39;Some article&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="delete-activities">
+<h3>Delete activities<a class="headerlink" href="#delete-activities" title="제목 주소">¶</a></h3>
+<p>The version properties are especially useful for delete activities. Once the
+activity is fetched from the database the object is no longer available (
+since its deleted), hence the only way we could show some information about the
+object the user deleted is by accessing the object_version property.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">session</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="n">third_activity</span> <span class="o">=</span> <span class="n">Activity</span><span class="p">(</span><span class="n">verb</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;delete&#39;</span><span class="p">,</span> <span class="nb">object</span><span class="o">=</span><span class="n">article</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">third_activity</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="n">third_activity</span><span class="o">.</span><span class="n">object_version</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># u&#39;Some article updated!&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="local-version-histories-using-targets">
+<h3>Local version histories using targets<a class="headerlink" href="#local-version-histories-using-targets" title="제목 주소">¶</a></h3>
+<p>The target property of the Activity model offers a way of tracking changes of
+given related object. In the example below we create a new activity when adding
+a category for article and then mark the article as the target of this
+activity.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Category</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;Fist category&#39;</span><span class="p">,</span> <span class="n">article</span><span class="o">=</span><span class="n">article</span><span class="p">))</span>
+<span class="n">session</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<span class="n">activity</span> <span class="o">=</span> <span class="n">Activity</span><span class="p">(</span>
+    <span class="n">verb</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;create&#39;</span><span class="p">,</span>
+    <span class="nb">object</span><span class="o">=</span><span class="n">category</span><span class="p">,</span>
+    <span class="n">target</span><span class="o">=</span><span class="n">article</span>
+<span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">activity</span><span class="p">)</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Now if we wanted to find all the changes that affected given article we could
+do so by searching through all the activities where either the object or
+target is the given article.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sqlalchemy</span> <span class="k">as</span> <span class="nn">sa</span>
+
+
+<span class="n">activities</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Activity</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+    <span class="n">sa</span><span class="o">.</span><span class="n">or_</span><span class="p">(</span>
+        <span class="n">Activity</span><span class="o">.</span><span class="n">object</span> <span class="o">==</span> <span class="n">article</span><span class="p">,</span>
+        <span class="n">Activity</span><span class="o">.</span><span class="n">target</span> <span class="o">==</span> <span class="n">article</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="module-sqlalchemy_continuum.plugins.flask">
+<span id="flask"></span><h2>Flask<a class="headerlink" href="#module-sqlalchemy_continuum.plugins.flask" title="제목 주소">¶</a></h2>
+<p>FlaskPlugin offers way of integrating Flask framework with
+SQLAlchemy-Continuum. Flask-Plugin adds two columns for Transaction model,
+namely <cite>user_id</cite> and <cite>remote_addr</cite>.</p>
+<p>These columns are automatically populated when transaction object is created.
+The <cite>remote_addr</cite> column is populated with the value of the remote address that
+made current request. The <cite>user_id</cite> column is populated with the id of the
+current_user object.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy_continuum.plugins</span> <span class="k">import</span> <span class="n">FlaskPlugin</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy_continuum</span> <span class="k">import</span> <span class="n">make_versioned</span>
+
+
+<span class="n">make_versioned</span><span class="p">(</span><span class="n">plugins</span><span class="o">=</span><span class="p">[</span><span class="n">FlaskPlugin</span><span class="p">()])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-sqlalchemy_continuum.plugins.property_mod_tracker">
+<span id="propertymodtracker"></span><span id="property-mod-tracker"></span><h2>PropertyModTracker<a class="headerlink" href="#module-sqlalchemy_continuum.plugins.property_mod_tracker" title="제목 주소">¶</a></h2>
+<p>The PropertyModTrackerPlugin offers a way of efficiently tracking individual
+property modifications. With PropertyModTrackerPlugin you can make efficient
+queries such as:</p>
+<p>Find all versions of model X where user updated the property A or property B.</p>
+<p>Find all versions of model X where user didn't update property A.</p>
+<p>PropertyModTrackerPlugin adds separate modified tracking column for each
+versioned column. So for example if you have versioned model called Article
+with columns <cite>name</cite> and <cite>content</cite>, this plugin would add two additional boolean
+columns <cite>name_mod</cite> and <cite>content_mod</cite> for the version model. When user commits
+transactions the plugin automatically updates these boolean columns.</p>
+</div>
+<div class="section" id="module-sqlalchemy_continuum.plugins.transaction_changes">
+<span id="transactionchanges"></span><h2>TransactionChanges<a class="headerlink" href="#module-sqlalchemy_continuum.plugins.transaction_changes" title="제목 주소">¶</a></h2>
+<p>TransactionChanges provides way of keeping track efficiently which declarative
+models were changed in given transaction. This can be useful when transactions
+need to be queried afterwards for problems such as:</p>
+<ol class="arabic simple">
+<li>Find all transactions which affected <cite>User</cite> model.</li>
+<li>Find all transactions which didn't affect models <cite>Entity</cite> and <cite>Event</cite>.</li>
+</ol>
+<p>The plugin works in two ways. On class instrumentation phase this plugin
+creates a special transaction model called <cite>TransactionChanges</cite>. This model is
+associated with table called <cite>transaction_changes</cite>, which has only only two
+fields: transaction_id and entity_name. If for example transaction consisted
+of saving 5 new User entities and 1 Article entity, two new rows would be
+inserted into transaction_changes table.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="48%" />
+<col width="52%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>transaction_id</td>
+<td>entity_name</td>
+</tr>
+<tr class="row-even"><td>233678</td>
+<td>User</td>
+</tr>
+<tr class="row-odd"><td>233678</td>
+<td>Article</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="module-sqlalchemy_continuum.plugins.transaction_meta">
+<span id="transactionmeta"></span><h2>TransactionMeta<a class="headerlink" href="#module-sqlalchemy_continuum.plugins.transaction_meta" title="제목 주소">¶</a></h2>
+<p>TransactionMetaPlugin offers a way of saving key-value data for transations.
+You can use the plugin in same way as other plugins:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">meta_plugin</span> <span class="o">=</span> <span class="n">TransactionMetaPlugin</span><span class="p">()</span>
+
+<span class="n">versioning_manager</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">meta_plugin</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>TransactionMetaPlugin creates a simple model called TransactionMeta. This class
+has three columns: transaction_id, key and value. TransactionMeta plugin also
+creates an association proxy between TransactionMeta and Transaction classes
+for easy dictionary based access of key-value pairs.</p>
+<p>You can easily 'tag' transactions with certain key value pairs by giving these
+keys and values to the meta property of Transaction class.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sqlalchemy_continuum</span> <span class="k">import</span> <span class="n">versioning_manager</span>
+
+
+<span class="n">article</span> <span class="o">=</span> <span class="n">Article</span><span class="p">()</span>
+<span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+
+<span class="n">uow</span> <span class="o">=</span> <span class="n">versioning_manager</span><span class="o">.</span><span class="n">unit_of_work</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+<span class="n">tx</span> <span class="o">=</span> <span class="n">uow</span><span class="o">.</span><span class="n">create_transaction</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+<span class="n">tx</span><span class="o">.</span><span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="sa">u</span><span class="s1">&#39;some_key&#39;</span><span class="p">:</span> <span class="sa">u</span><span class="s1">&#39;some value&#39;</span><span class="p">}</span>
+<span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<span class="n">TransactionMeta</span> <span class="o">=</span> <span class="n">meta_plugin</span><span class="o">.</span><span class="n">model_class</span>
+<span class="n">Transaction</span> <span class="o">=</span> <span class="n">versioning_manager</span><span class="o">.</span><span class="n">transaction_cls</span>
+
+<span class="c1"># find all transactions with &#39;article&#39; tags</span>
+<span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Transaction</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Transaction</span><span class="o">.</span><span class="n">meta_relation</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+            <span class="n">TransactionMeta</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;some_key&#39;</span><span class="p">,</span>
+            <span class="n">TransactionMeta</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;some value&#39;</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="native_versioning.html" class="btn btn-neutral" title="Native versioning" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

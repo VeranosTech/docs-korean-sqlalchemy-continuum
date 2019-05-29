@@ -1,0 +1,591 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sqlalchemy_continuum.relationship_builder &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="../../genindex.html" />
+    <link rel="search" title="검색" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">모듈 코드</a> &raquo;</li>
+        
+          <li><a href="../sqlalchemy_continuum.html">sqlalchemy_continuum</a> &raquo;</li>
+        
+      <li>sqlalchemy_continuum.relationship_builder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sqlalchemy_continuum.relationship_builder</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sqlalchemy</span> <span class="k">as</span> <span class="nn">sa</span>
+
+<span class="kn">from</span> <span class="nn">.exc</span> <span class="k">import</span> <span class="n">ClassNotVersioned</span>
+<span class="kn">from</span> <span class="nn">.expression_reflector</span> <span class="k">import</span> <span class="n">VersionExpressionReflector</span>
+<span class="kn">from</span> <span class="nn">.operation</span> <span class="k">import</span> <span class="n">Operation</span>
+<span class="kn">from</span> <span class="nn">.table_builder</span> <span class="k">import</span> <span class="n">TableBuilder</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">adapt_columns</span><span class="p">,</span> <span class="n">version_class</span><span class="p">,</span> <span class="n">option</span>
+
+
+<div class="viewcode-block" id="RelationshipBuilder"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder">[문서]</a><span class="k">class</span> <span class="nc">RelationshipBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">versioning_manager</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">property_</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">versioning_manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">property</span> <span class="o">=</span> <span class="n">property_</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+    <span class="k">def</span> <span class="nf">one_to_many_subquery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">tx_column</span> <span class="o">=</span> <span class="n">option</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">)</span>
+
+        <span class="n">remote_alias</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">aliased</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">)</span>
+        <span class="n">primary_keys</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">remote_alias</span><span class="p">,</span> <span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">column</span>
+            <span class="ow">in</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="n">remote_alias</span><span class="p">)</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">columns</span>
+            <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">primary_key</span> <span class="ow">and</span> <span class="n">column</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">tx_column</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">sa</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">remote_alias</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">)</span> <span class="o">&lt;=</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">),</span>
+                    <span class="o">*</span><span class="p">[</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="n">remote_alias</span><span class="p">,</span> <span class="n">pk</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">==</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">,</span> <span class="n">pk</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">primary_keys</span>
+                    <span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">primary_keys</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">having</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">remote_alias</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">))</span> <span class="o">==</span>
+                <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_cls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">many_to_one_subquery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">tx_column</span> <span class="o">=</span> <span class="n">option</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">)</span>
+        <span class="n">reflector</span> <span class="o">=</span> <span class="n">VersionExpressionReflector</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">))]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">)</span> <span class="o">&lt;=</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">),</span>
+                    <span class="n">reflector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">primaryjoin</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">object_session</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">criteria</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="RelationshipBuilder.process_query"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.process_query">[문서]</a>    <span class="k">def</span> <span class="nf">process_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process given SQLAlchemy Query object depending on the associated</span>
+<span class="sd">        RelationshipProperty object.</span>
+
+<span class="sd">        :param query: SQLAlchemy Query object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">lazy</span> <span class="o">==</span> <span class="s1">&#39;dynamic&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">query</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">uselist</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">direction</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">versioned</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">direction</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;ONETOMANY&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">one_to_many_criteria</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">direction</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;MANYTOMANY&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">many_to_many_criteria</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">direction</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;MANYTOONE&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">many_to_one_criteria</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reflector</span> <span class="o">=</span> <span class="n">VersionExpressionReflector</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">reflector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">primaryjoin</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RelationshipBuilder.many_to_many_criteria"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.many_to_many_criteria">[문서]</a>    <span class="k">def</span> <span class="nf">many_to_many_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the many-to-many query.</span>
+
+<span class="sd">        Looks up remote items through associations and for each item returns</span>
+<span class="sd">        returns the last version with a transaction less than or equal to the</span>
+<span class="sd">        transaction of `obj`. This must hold true for both the association and</span>
+<span class="sd">        the remote relation items.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        Select all tags of article with id 3 and transaction 5</span>
+
+<span class="sd">        .. code-block:: sql</span>
+
+<span class="sd">        SELECT tags_version.*</span>
+<span class="sd">        FROM tags_version</span>
+<span class="sd">        WHERE EXISTS (</span>
+<span class="sd">            SELECT 1</span>
+<span class="sd">            FROM article_tag_version</span>
+<span class="sd">            WHERE article_id = 3</span>
+<span class="sd">            AND tag_id = tags_version.id</span>
+<span class="sd">            AND operation_type != 2</span>
+<span class="sd">            AND EXISTS (</span>
+<span class="sd">                SELECT 1</span>
+<span class="sd">                FROM article_tag_version as article_tag_version2</span>
+<span class="sd">                WHERE article_tag_version2.tag_id = article_tag_version.tag_id</span>
+<span class="sd">                AND article_tag_version2.tx_id &lt;= 5</span>
+<span class="sd">                GROUP BY article_tag_version2.tag_id</span>
+<span class="sd">                HAVING</span>
+<span class="sd">                    MAX(article_tag_version2.tx_id) =</span>
+<span class="sd">                    article_tag_version.tx_id</span>
+<span class="sd">            )</span>
+<span class="sd">        )</span>
+<span class="sd">        AND EXISTS (</span>
+<span class="sd">            SELECT 1</span>
+<span class="sd">            FROM tags_version as tags_version_2</span>
+<span class="sd">            WHERE tags_version_2.id = tags_version.id</span>
+<span class="sd">            AND tags_version_2.tx_id &lt;= 5</span>
+<span class="sd">            GROUP BY tags_version_2.id</span>
+<span class="sd">            HAVING MAX(tags_version_2.tx_id) = tags_version.tx_id</span>
+<span class="sd">        )</span>
+<span class="sd">        AND operation_type != 2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">association_subquery</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">one_to_many_subquery</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="o">.</span><span class="n">operation_type</span> <span class="o">!=</span> <span class="n">Operation</span><span class="o">.</span><span class="n">DELETE</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RelationshipBuilder.many_to_one_criteria"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.many_to_one_criteria">[문서]</a>    <span class="k">def</span> <span class="nf">many_to_one_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the many-to-one query.</span>
+
+<span class="sd">        Returns the item on the &#39;one&#39; side with the highest transaction id</span>
+<span class="sd">        as long as it is less or equal to the transaction id of the `obj`.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        Look up the Article of a Tag with article_id = 4 and</span>
+<span class="sd">        transaction_id = 5</span>
+
+<span class="sd">        .. code-block:: sql</span>
+
+<span class="sd">        SELECT *</span>
+<span class="sd">        FROM articles_version</span>
+<span class="sd">        WHERE id = 4</span>
+<span class="sd">        AND transaction_id = (</span>
+<span class="sd">            SELECT max(transaction_id)</span>
+<span class="sd">            FROM articles_version</span>
+<span class="sd">            WHERE transaction_id &lt;= 5</span>
+<span class="sd">            AND id = 4</span>
+<span class="sd">        )</span>
+<span class="sd">        AND operation_type != 2</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reflector</span> <span class="o">=</span> <span class="n">VersionExpressionReflector</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+            <span class="n">reflector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">primaryjoin</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">many_to_one_subquery</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="o">.</span><span class="n">operation_type</span> <span class="o">!=</span> <span class="n">Operation</span><span class="o">.</span><span class="n">DELETE</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RelationshipBuilder.one_to_many_criteria"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.one_to_many_criteria">[문서]</a>    <span class="k">def</span> <span class="nf">one_to_many_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the one-to-many query.</span>
+
+<span class="sd">        For each item on the &#39;many&#39; side, returns its latest version as long as</span>
+<span class="sd">        the transaction of that version is less than equal of the transaction</span>
+<span class="sd">        of `obj`.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        Using the Article-Tags relationship, where we look for tags of</span>
+<span class="sd">        article_version with id = 3 and transaction = 5 the sql produced is</span>
+
+<span class="sd">        .. code-block:: sql</span>
+
+<span class="sd">        SELECT tags_version.*</span>
+<span class="sd">        FROM tags_version</span>
+<span class="sd">        WHERE tags_version.article_id = 3</span>
+<span class="sd">        AND tags_version.operation_type != 2</span>
+<span class="sd">        AND EXISTS (</span>
+<span class="sd">            SELECT 1</span>
+<span class="sd">            FROM tags_version as tags_version_last</span>
+<span class="sd">            WHERE tags_version_last.transaction_id &lt;= 5</span>
+<span class="sd">            AND tags_version_last.id = tags_version.id</span>
+<span class="sd">            GROUP BY tags_version_last.id</span>
+<span class="sd">            HAVING</span>
+<span class="sd">                MAX(tags_version_last.transaction_id) =</span>
+<span class="sd">                tags_version.transaction_id</span>
+<span class="sd">        )</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reflector</span> <span class="o">=</span> <span class="n">VersionExpressionReflector</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+            <span class="n">reflector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">primaryjoin</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">one_to_many_subquery</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="o">.</span><span class="n">operation_type</span> <span class="o">!=</span> <span class="n">Operation</span><span class="o">.</span><span class="n">DELETE</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reflected_relationship</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a reflected one-to-many, one-to-one and many-to-one</span>
+<span class="sd">        relationship between two version classes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">relationship</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">relationship</span>
+
+<div class="viewcode-block" id="RelationshipBuilder.association_subquery"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.association_subquery">[문서]</a>    <span class="k">def</span> <span class="nf">association_subquery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an EXISTS clause that checks if an association exists for given</span>
+<span class="sd">        SQLAlchemy declarative object. This query is used by</span>
+<span class="sd">        many_to_many_criteria method.</span>
+
+<span class="sd">        Example query:</span>
+
+<span class="sd">        .. code-block:: sql</span>
+
+<span class="sd">        EXISTS (</span>
+<span class="sd">            SELECT 1</span>
+<span class="sd">            FROM article_tag_version</span>
+<span class="sd">            WHERE article_id = 3</span>
+<span class="sd">            AND tag_id = tags_version.id</span>
+<span class="sd">            AND operation_type != 2</span>
+<span class="sd">            AND EXISTS (</span>
+<span class="sd">                SELECT 1</span>
+<span class="sd">                FROM article_tag_version as article_tag_version2</span>
+<span class="sd">                WHERE article_tag_version2.tag_id = article_tag_version.tag_id</span>
+<span class="sd">                AND article_tag_version2.tx_id &lt;=5</span>
+<span class="sd">                GROUP BY article_tag_version2.tag_id</span>
+<span class="sd">                HAVING</span>
+<span class="sd">                    MAX(article_tag_version2.tx_id) =</span>
+<span class="sd">                    article_tag_version.tx_id</span>
+<span class="sd">            )</span>
+<span class="sd">        )</span>
+
+<span class="sd">        :param obj: SQLAlchemy declarative object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tx_column</span> <span class="o">=</span> <span class="n">option</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">)</span>
+        <span class="n">reflector</span> <span class="o">=</span> <span class="n">VersionExpressionReflector</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="p">)</span>
+
+        <span class="n">association_table_alias</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">association_version_table</span><span class="o">.</span><span class="n">alias</span><span class="p">()</span>
+        <span class="n">association_cols</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">association_table_alias</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">association_col</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">association_col</span>
+            <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_to_association_column_pairs</span>
+        <span class="p">]</span>
+
+        <span class="n">association_exists</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+                    <span class="n">association_table_alias</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">tx_column</span><span class="p">]</span> <span class="o">&lt;=</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">tx_column</span><span class="p">),</span>
+                    <span class="o">*</span><span class="p">[</span><span class="n">association_col</span> <span class="o">==</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">association_version_table</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">association_col</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+                      <span class="k">for</span> <span class="n">association_col</span>
+                      <span class="ow">in</span> <span class="n">association_cols</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">group_by</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">association_cols</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">having</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">func</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">association_table_alias</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">tx_column</span><span class="p">])</span> <span class="o">==</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">association_version_table</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">tx_column</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">association_version_table</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">sa</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+                    <span class="n">reflector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">primaryjoin</span><span class="p">),</span>
+                    <span class="n">association_exists</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">association_version_table</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">operation_type</span> <span class="o">!=</span>
+                    <span class="n">Operation</span><span class="o">.</span><span class="n">DELETE</span><span class="p">,</span>
+                    <span class="n">adapt_columns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">secondaryjoin</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">local_cls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RelationshipBuilder.build_association_version_tables"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.build_association_version_tables">[문서]</a>    <span class="k">def</span> <span class="nf">build_association_version_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds many-to-many association version table for given property.</span>
+<span class="sd">        Association version tables are used for tracking change history of</span>
+<span class="sd">        many-to-many associations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">column</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">remote_side</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">association_tables</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">builder</span> <span class="o">=</span> <span class="n">TableBuilder</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span>
+            <span class="n">column</span><span class="o">.</span><span class="n">table</span>
+        <span class="p">)</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">column</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">metadata</span>
+        <span class="k">if</span> <span class="n">builder</span><span class="o">.</span><span class="n">parent_table</span><span class="o">.</span><span class="n">schema</span><span class="p">:</span>
+            <span class="n">table_name</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">parent_table</span><span class="o">.</span><span class="n">schema</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">builder</span><span class="o">.</span><span class="n">table_name</span>
+        <span class="k">elif</span> <span class="n">metadata</span><span class="o">.</span><span class="n">schema</span><span class="p">:</span>
+            <span class="n">table_name</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">schema</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">builder</span><span class="o">.</span><span class="n">table_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">table_name</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">table_name</span>
+
+        <span class="k">if</span> <span class="n">table_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">association_version_table</span> <span class="o">=</span> <span class="n">table</span> <span class="o">=</span> <span class="n">builder</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">association_version_tables</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># may have already been created if we visiting the &#39;other&#39; side of</span>
+            <span class="c1"># a self-referential many-to-many relationship</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">association_version_table</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds reflected relationship between version classes based on given</span>
+<span class="sd">        parent object&#39;s RelationshipProperty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local_cls</span> <span class="o">=</span> <span class="n">version_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">versioned</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span> <span class="o">=</span> <span class="n">version_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">class_</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">versioned</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">except</span> <span class="n">ClassNotVersioned</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">mapper</span><span class="o">.</span><span class="n">class_</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">secondary</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">viewonly</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">is_excluded_property</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">key</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">build_association_version_tables</span><span class="p">()</span>
+
+            <span class="c1"># store remote cls to association table column pairs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remote_to_association_column_pairs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">column_pair</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">local_remote_pairs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">column_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">remote_to_association_column_pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column_pair</span><span class="p">)</span>
+
+        <span class="nb">setattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">local_cls</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">property</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reflected_relationship</span>
+        <span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="../../_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

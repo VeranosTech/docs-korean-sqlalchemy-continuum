@@ -1,0 +1,738 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sqlalchemy_continuum.manager &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="../../genindex.html" />
+    <link rel="search" title="검색" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">모듈 코드</a> &raquo;</li>
+        
+          <li><a href="../sqlalchemy_continuum.html">sqlalchemy_continuum</a> &raquo;</li>
+        
+      <li>sqlalchemy_continuum.manager</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sqlalchemy_continuum.manager</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
+
+<span class="kn">import</span> <span class="nn">sqlalchemy</span> <span class="k">as</span> <span class="nn">sa</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">object_session</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy_utils</span> <span class="k">import</span> <span class="n">get_column_key</span>
+
+<span class="kn">from</span> <span class="nn">.builder</span> <span class="k">import</span> <span class="n">Builder</span>
+<span class="kn">from</span> <span class="nn">.fetcher</span> <span class="k">import</span> <span class="n">SubqueryFetcher</span><span class="p">,</span> <span class="n">ValidityFetcher</span>
+<span class="kn">from</span> <span class="nn">.operation</span> <span class="k">import</span> <span class="n">Operation</span>
+<span class="kn">from</span> <span class="nn">.plugins</span> <span class="k">import</span> <span class="n">PluginCollection</span>
+<span class="kn">from</span> <span class="nn">.transaction</span> <span class="k">import</span> <span class="n">TransactionFactory</span>
+<span class="kn">from</span> <span class="nn">.unit_of_work</span> <span class="k">import</span> <span class="n">UnitOfWork</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">is_modified</span><span class="p">,</span> <span class="n">is_versioned</span>
+
+
+<span class="k">def</span> <span class="nf">tracked_operation</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapper</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_versioned</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">object_session</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">connection</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="o">.</span><span class="n">engine</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="ow">and</span> <span class="n">connection</span><span class="o">.</span><span class="n">connection</span> <span class="ow">is</span> <span class="n">conn</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+                        <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_of_work</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+                        <span class="k">break</span>  <span class="c1"># The ConnectionFairy is the same, this connection is a clone</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uow</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrapper</span>
+
+
+<div class="viewcode-block" id="VersioningManager"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager">[문서]</a><span class="k">class</span> <span class="nc">VersioningManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    VersioningManager delegates versioning configuration operations to builder</span>
+<span class="sd">    classes and the actual versioning to UnitOfWork class. Manager contains</span>
+<span class="sd">    configuration options that act as defaults for all versioned classes.</span>
+
+<span class="sd">    :param unit_of_work_cls:</span>
+<span class="sd">        The UnitOfWork class to use for initializing UnitOfWork objects for</span>
+<span class="sd">        versioning</span>
+<span class="sd">    :param transaction_cls:</span>
+<span class="sd">        Transaction class to use for versioning. If None, the default</span>
+<span class="sd">        Transaction class generated by TransactionFactory will be used.</span>
+<span class="sd">    :param user_cls:</span>
+<span class="sd">        User class which Transaction class should have relationship to. This</span>
+<span class="sd">        can either be a class or string name of a class for lazy evaluation.</span>
+<span class="sd">    :param options:</span>
+<span class="sd">        Versioning options</span>
+<span class="sd">    :param plugins:</span>
+<span class="sd">        Versioning plugins that listen the events invoked by the manager.</span>
+<span class="sd">    :param builder:</span>
+<span class="sd">        Builder object which handles the building of versioning tables and</span>
+<span class="sd">        models.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">unit_of_work_cls</span><span class="o">=</span><span class="n">UnitOfWork</span><span class="p">,</span>
+        <span class="n">transaction_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">user_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">options</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">plugins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">builder</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uow_class</span> <span class="o">=</span> <span class="n">unit_of_work_cls</span>
+        <span class="k">if</span> <span class="n">builder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">builder</span> <span class="o">=</span> <span class="n">Builder</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">builder</span> <span class="o">=</span> <span class="n">builder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">transaction_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transaction_cls</span> <span class="o">=</span> <span class="n">transaction_cls</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transaction_cls</span> <span class="o">=</span> <span class="n">TransactionFactory</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">user_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">user_cls</span> <span class="o">=</span> <span class="n">user_cls</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;versioning&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;base_classes&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">&#39;table_name&#39;</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">_version&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;exclude&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;include&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;native_versioning&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;create_models&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;create_tables&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">:</span> <span class="s1">&#39;transaction_id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;end_transaction_column_name&#39;</span><span class="p">:</span> <span class="s1">&#39;end_transaction_id&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;operation_type_column_name&#39;</span><span class="p">:</span> <span class="s1">&#39;operation_type&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;strategy&#39;</span><span class="p">:</span> <span class="s1">&#39;validity&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;use_module_name&#39;</span><span class="p">:</span> <span class="kc">False</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">plugins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plugins</span> <span class="o">=</span> <span class="n">plugins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plugins</span>
+
+    <span class="nd">@plugins</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">plugins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plugin_collection</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_plugins</span> <span class="o">=</span> <span class="n">PluginCollection</span><span class="p">(</span><span class="n">plugin_collection</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">fetcher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;strategy&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;subquery&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SubqueryFetcher</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ValidityFetcher</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VersioningManager.reset"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.reset">[문서]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets this manager&#39;s internal state.</span>
+
+<span class="sd">        This method should be used in test cases that create models on the fly.</span>
+<span class="sd">        Otherwise history_class_map and some other variables would be polluted</span>
+<span class="sd">        by no more used model classes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tables</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pending_classes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">association_tables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">association_version_tables</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declarative_base</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_class_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_class_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_listeners</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;before_flush&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">before_flush</span><span class="p">,</span>
+            <span class="s1">&#39;after_flush&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">after_flush</span><span class="p">,</span>
+            <span class="s1">&#39;after_commit&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">,</span>
+            <span class="s1">&#39;after_rollback&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mapper_listeners</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;after_delete&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_deletes</span><span class="p">,</span>
+            <span class="s1">&#39;after_update&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_updates</span><span class="p">,</span>
+            <span class="s1">&#39;after_insert&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">track_inserts</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_config_listeners</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;instrument_class&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">instrument_versioned_classes</span><span class="p">,</span>
+            <span class="s1">&#39;after_configured&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">configure_versioned_classes</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1"># A dictionary of units of work. Keys as connection objects and values</span>
+        <span class="c1"># as UnitOfWork objects.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_connection_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="VersioningManager.create_transaction_model"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.create_transaction_model">[문서]</a>    <span class="k">def</span> <span class="nf">create_transaction_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create Transaction class but only if it doesn&#39;t already exist in</span>
+<span class="sd">        declarative model registry.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_cls</span><span class="p">,</span> <span class="n">TransactionFactory</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transaction_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_cls</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction_cls</span></div>
+
+    <span class="k">def</span> <span class="nf">is_excluded_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">column</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">get_column_key</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">exc</span><span class="o">.</span><span class="n">UnmappedColumnError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_excluded_property</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+<div class="viewcode-block" id="VersioningManager.is_excluded_property"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.is_excluded_property">[문서]</a>    <span class="k">def</span> <span class="nf">is_excluded_property</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns whether or not given property of given model is excluded from</span>
+<span class="sd">        the associated history model.</span>
+
+<span class="sd">        :param model: SQLAlchemy declarative model object.</span>
+<span class="sd">        :param key: Model property key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;include&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;exclude&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.option"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.option">[문서]</a>    <span class="k">def</span> <span class="nf">option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the option value for given model. If the option is not found</span>
+<span class="sd">        from given model falls back to default values of this manager object.</span>
+<span class="sd">        If the option is not found from this manager object either this method</span>
+<span class="sd">        throws a KeyError.</span>
+
+<span class="sd">        :param model: SQLAlchemy declarative object</span>
+<span class="sd">        :param name: name of the versioning option</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;__versioned__&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Model </span><span class="si">%r</span><span class="s1"> is not versioned.&#39;</span> <span class="o">%</span> <span class="n">model</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">__versioned__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="VersioningManager.apply_class_configuration_listeners"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.apply_class_configuration_listeners">[문서]</a>    <span class="k">def</span> <span class="nf">apply_class_configuration_listeners</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies class configuration listeners for given mapper.</span>
+
+<span class="sd">        The listener work in two phases:</span>
+
+<span class="sd">        1. Class instrumentation phase</span>
+<span class="sd">            The first listeners listens to class instrumentation event and</span>
+<span class="sd">            handles the collecting of versioned models and adds them to</span>
+<span class="sd">            the pending_classes list.</span>
+<span class="sd">        2. After class configuration phase</span>
+<span class="sd">            The second listener listens to after class configuration event and</span>
+<span class="sd">            handles the actual history model generation based on list that</span>
+<span class="sd">            was collected during class instrumenation phase.</span>
+
+<span class="sd">        :param mapper:</span>
+<span class="sd">            SQLAlchemy mapper to apply the class configuration listeners to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_config_listeners</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.remove_class_configuration_listeners"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.remove_class_configuration_listeners">[문서]</a>    <span class="k">def</span> <span class="nf">remove_class_configuration_listeners</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove versioning class configuration listeners from specified mapper.</span>
+
+<span class="sd">        :param mapper:</span>
+<span class="sd">            mapper to remove class configuration listeners from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_config_listeners</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.track_operations"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.track_operations">[문서]</a>    <span class="k">def</span> <span class="nf">track_operations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attach listeners for specified mapper that track SQL inserts, updates</span>
+<span class="sd">        and deletes.</span>
+
+<span class="sd">        :param mapper: mapper to track the SQL operations from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper_listeners</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.remove_operations_tracking"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.remove_operations_tracking">[문서]</a>    <span class="k">def</span> <span class="nf">remove_operations_tracking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mapper</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove listeners from specified mapper that track SQL inserts, updates</span>
+<span class="sd">        and deletes.</span>
+
+<span class="sd">        :param mapper:</span>
+<span class="sd">            mapper to remove the SQL operations tracking listeners from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mapper_listeners</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">mapper</span><span class="p">,</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.track_session"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.track_session">[문서]</a>    <span class="k">def</span> <span class="nf">track_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attach listeners that track the operations (flushing, committing and</span>
+<span class="sd">        rolling back) of given session. This method should be used in</span>
+<span class="sd">        conjunction with `track_operations`.</span>
+
+<span class="sd">        :param session: SQLAlchemy session to track the operations from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_listeners</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.remove_session_tracking"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.remove_session_tracking">[문서]</a>    <span class="k">def</span> <span class="nf">remove_session_tracking</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove listeners that track the operations (flushing, committing and</span>
+<span class="sd">        rolling back) of given session. This method should be used in</span>
+<span class="sd">        conjunction with `remove_operations_tracking`.</span>
+
+<span class="sd">        :param session:</span>
+<span class="sd">            SQLAlchemy session to remove the operations tracking from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_listeners</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">sa</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">event_name</span><span class="p">,</span> <span class="n">listener</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.track_inserts"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.track_inserts">[문서]</a>    <span class="nd">@tracked_operation</span>
+    <span class="k">def</span> <span class="nf">track_inserts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uow</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Track object insert operations. Whenever object is inserted it is</span>
+<span class="sd">        added to this UnitOfWork&#39;s internal operations dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">uow</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">add_insert</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.track_updates"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.track_updates">[문서]</a>    <span class="nd">@tracked_operation</span>
+    <span class="k">def</span> <span class="nf">track_updates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uow</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Track object update operations. Whenever object is updated it is</span>
+<span class="sd">        added to this UnitOfWork&#39;s internal operations dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_modified</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">uow</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">add_update</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.track_deletes"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.track_deletes">[문서]</a>    <span class="nd">@tracked_operation</span>
+    <span class="k">def</span> <span class="nf">track_deletes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uow</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Track object deletion operations. Whenever object is deleted it is</span>
+<span class="sd">        added to this UnitOfWork&#39;s internal operations dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">uow</span><span class="o">.</span><span class="n">operations</span><span class="o">.</span><span class="n">add_delete</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.unit_of_work"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.unit_of_work">[문서]</a>    <span class="k">def</span> <span class="nf">unit_of_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the associated SQLAlchemy-Continuum UnitOfWork object for given</span>
+<span class="sd">        SQLAlchemy session object.</span>
+
+<span class="sd">        If no UnitOfWork object exists for given object then this method tries</span>
+<span class="sd">        to create one.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">connection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">conn</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_connection_map</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">session_connection_map</span><span class="p">[</span><span class="n">session</span><span class="p">]</span> <span class="o">=</span> <span class="n">conn</span>
+
+        <span class="k">if</span> <span class="n">conn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uow_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span> <span class="o">=</span> <span class="n">uow</span>
+            <span class="k">return</span> <span class="n">uow</span></div>
+
+<div class="viewcode-block" id="VersioningManager.before_flush"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.before_flush">[문서]</a>    <span class="k">def</span> <span class="nf">before_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">flush_context</span><span class="p">,</span> <span class="n">instances</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Before flush listener for SQLAlchemy sessions. If this manager has</span>
+<span class="sd">        versioning enabled this listener invokes the process before flush of</span>
+<span class="sd">        associated UnitOfWork object.</span>
+
+<span class="sd">        :param session: SQLAlchemy session</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;versioning&#39;</span><span class="p">]:</span>
+            <span class="k">return</span>
+
+        <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_of_work</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+        <span class="n">uow</span><span class="o">.</span><span class="n">process_before_flush</span><span class="p">(</span><span class="n">session</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.after_flush"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.after_flush">[문서]</a>    <span class="k">def</span> <span class="nf">after_flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">flush_context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        After flush listener for SQLAlchemy sessions. If this manager has</span>
+<span class="sd">        versioning enabled this listener gets the UnitOfWork associated with</span>
+<span class="sd">        session&#39;s connections and invokes the process_after_flush method</span>
+<span class="sd">        of that object.</span>
+
+<span class="sd">        :param session: SQLAlchemy session</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;versioning&#39;</span><span class="p">]:</span>
+            <span class="k">return</span>
+        <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_of_work</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+        <span class="n">uow</span><span class="o">.</span><span class="n">process_after_flush</span><span class="p">(</span><span class="n">session</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.clear"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.clear">[문서]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Simple SQLAlchemy listener that is being invoked after successful</span>
+<span class="sd">        transaction commit or when transaction rollback occurs. The purpose of</span>
+<span class="sd">        this listener is to reset this UnitOfWork back to its initialization</span>
+<span class="sd">        state.</span>
+
+<span class="sd">        :param session: SQLAlchemy session object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">session</span><span class="o">.</span><span class="n">transaction</span><span class="o">.</span><span class="n">nested</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_connection_map</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">conn</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">conn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">:</span>
+            <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span>
+            <span class="n">uow</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="ow">or</span> <span class="n">conn</span><span class="o">.</span><span class="n">connection</span> <span class="ow">is</span> <span class="n">connection</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+                <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">connection</span><span class="p">]</span>
+                <span class="n">uow</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">connection</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">clear_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">conn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">:</span>
+            <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span>
+            <span class="n">uow</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span>
+
+
+        <span class="k">for</span> <span class="n">session</span><span class="p">,</span> <span class="n">connection</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">session_connection_map</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">connection</span> <span class="ow">is</span> <span class="n">conn</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_connection_map</span><span class="p">[</span><span class="n">session</span><span class="p">]</span>
+
+
+        <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="ow">or</span> <span class="n">conn</span><span class="o">.</span><span class="n">connection</span> <span class="ow">is</span> <span class="n">connection</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+                <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">connection</span><span class="p">]</span>
+                <span class="n">uow</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">connection</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="VersioningManager.append_association_operation"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.append_association_operation">[문서]</a>    <span class="k">def</span> <span class="nf">append_association_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">op</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Append history association operation to pending_statements list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span><span class="p">[</span><span class="s1">&#39;operation_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">op</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;table_name&#39;</span><span class="p">]</span> <span class="o">%</span> <span class="n">table_name</span><span class="p">]</span>
+            <span class="o">.</span><span class="n">insert</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">conn</span><span class="o">.</span><span class="n">engine</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">connection</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="ow">and</span> <span class="n">connection</span><span class="o">.</span><span class="n">connection</span> <span class="ow">is</span> <span class="n">conn</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+                        <span class="n">uow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_of_work</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">session</span><span class="p">)</span>
+                        <span class="k">break</span>  <span class="c1"># The ConnectionFairy is the same, this connection is a clone</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span>
+        <span class="n">uow</span><span class="o">.</span><span class="n">pending_statements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stmt</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.track_cloned_connections"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.track_cloned_connections">[문서]</a>    <span class="k">def</span> <span class="nf">track_cloned_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">opt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Track cloned connections from association tables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">connection</span><span class="p">,</span> <span class="n">uow</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">connection</span><span class="o">.</span><span class="n">closed</span> <span class="ow">and</span> <span class="n">connection</span><span class="o">.</span><span class="n">connection</span> <span class="ow">is</span> <span class="n">c</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>  <span class="c1"># ConnectionFairy is the same - this is a clone</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">units_of_work</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">uow</span></div>
+
+<div class="viewcode-block" id="VersioningManager.track_association_operations"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.track_association_operations">[문서]</a>    <span class="k">def</span> <span class="nf">track_association_operations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">executemany</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Track association operations and adds the generated history</span>
+<span class="sd">        association operations to pending_statements list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;versioning&#39;</span><span class="p">]</span> <span class="ow">and</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;native_versioning&#39;</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">op</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">isinsert</span><span class="p">:</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="n">Operation</span><span class="o">.</span><span class="n">INSERT</span>
+        <span class="k">elif</span> <span class="n">context</span><span class="o">.</span><span class="n">isdelete</span><span class="p">:</span>
+            <span class="n">op</span> <span class="o">=</span> <span class="n">Operation</span><span class="o">.</span><span class="n">DELETE</span>
+
+        <span class="k">if</span> <span class="n">op</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_name</span> <span class="o">=</span> <span class="n">statement</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">table_names</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">table</span><span class="o">.</span><span class="n">schema</span> <span class="k">else</span> <span class="n">table</span><span class="o">.</span><span class="n">schema</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">association_tables</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="n">table_names</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">executemany</span><span class="p">:</span>
+                    <span class="c1"># SQLAlchemy does not support function based values for</span>
+                    <span class="c1"># multi-inserts, hence we need to convert the orignal</span>
+                    <span class="c1"># multi-insert into batch of normal inserts</span>
+                    <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">parameters</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">append_association_operation</span><span class="p">(</span>
+                            <span class="n">conn</span><span class="p">,</span>
+                            <span class="n">table_name</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">positional_args_to_dict</span><span class="p">(</span>
+                                <span class="n">op</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">params</span>
+                            <span class="p">),</span>
+                            <span class="n">op</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">append_association_operation</span><span class="p">(</span>
+                        <span class="n">conn</span><span class="p">,</span>
+                        <span class="n">table_name</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">positional_args_to_dict</span><span class="p">(</span>
+                            <span class="n">op</span><span class="p">,</span>
+                            <span class="n">statement</span><span class="p">,</span>
+                            <span class="n">parameters</span>
+                        <span class="p">),</span>
+                        <span class="n">op</span>
+                    <span class="p">)</span></div>
+
+<div class="viewcode-block" id="VersioningManager.positional_args_to_dict"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.VersioningManager.positional_args_to_dict">[문서]</a>    <span class="k">def</span> <span class="nf">positional_args_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">statement</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        On some drivers (eg sqlite) generated INSERT statements use positional</span>
+<span class="sd">        args instead of key value dictionary. This method converts positional</span>
+<span class="sd">        args to key value dict.</span>
+
+<span class="sd">        :param statement: SQL statement string</span>
+<span class="sd">        :param params: tuple or dict of statement parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">parameters</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="n">Operation</span><span class="o">.</span><span class="n">DELETE</span><span class="p">:</span>
+                <span class="n">regexp</span> <span class="o">=</span> <span class="s1">&#39;^DELETE FROM (.+?) WHERE&#39;</span>
+                <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">regexp</span><span class="p">,</span> <span class="n">statement</span><span class="p">)</span>
+                <span class="n">tablename</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;`&#39;</span><span class="p">)</span>
+                <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="n">tablename</span><span class="p">]</span>
+                <span class="n">columns</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">primary_key</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">columns</span><span class="p">):</span>
+                    <span class="n">parameters</span><span class="p">[</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">column</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span>
+                    <span class="n">statement</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;)&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                <span class="p">]</span>
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">columns</span><span class="p">):</span>
+                    <span class="n">parameters</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">parameters</span>
+        <span class="k">return</span> <span class="n">params</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="../../_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

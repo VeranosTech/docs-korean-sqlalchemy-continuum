@@ -1,0 +1,539 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>색인 &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="#" />
+    <link rel="search" title="검색" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+
+<h1 id="index">색인</h1>
+
+<div class="genindex-jumpbox">
+ <a href="#A"><strong>A</strong></a>
+ | <a href="#B"><strong>B</strong></a>
+ | <a href="#C"><strong>C</strong></a>
+ | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
+ | <a href="#I"><strong>I</strong></a>
+ | <a href="#M"><strong>M</strong></a>
+ | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
+ | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
+ 
+</div>
+<h2 id="A">A</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.after_flush">after_flush() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.append_association_operation">append_association_operation() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.apply_class_configuration_listeners">apply_class_configuration_listeners() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.assign_attributes">assign_attributes() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.association_subquery">association_subquery() (sqlalchemy_continuum.relationship_builder.RelationshipBuilder method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="B">B</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.model_builder.ModelBuilder.base_classes">base_classes() (sqlalchemy_continuum.model_builder.ModelBuilder method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.before_flush">before_flush() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.build_association_version_tables">build_association_version_tables() (sqlalchemy_continuum.relationship_builder.RelationshipBuilder method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.model_builder.ModelBuilder.build_model">build_model() (sqlalchemy_continuum.model_builder.ModelBuilder method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.model_builder.ModelBuilder.build_parent_relationship">build_parent_relationship() (sqlalchemy_continuum.model_builder.ModelBuilder method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.model_builder.ModelBuilder.build_transaction_relationship">build_transaction_relationship() (sqlalchemy_continuum.model_builder.ModelBuilder method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="C">C</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.version.VersionClassBase.changeset">changeset (sqlalchemy_continuum.version.VersionClassBase attribute)</a>
+</li>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.changeset">changeset() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.clear">clear() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.count_versions">count_versions() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_association_versions">create_association_versions() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_transaction">create_transaction() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.create_transaction_model">create_transaction_model() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_version_objects">create_version_objects() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.get_or_create_version_object">get_or_create_version_object() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.get_versioning_manager">get_versioning_manager() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.has_changes">has_changes (sqlalchemy_continuum.unit_of_work.UnitOfWork attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.version.VersionClassBase.index">index (sqlalchemy_continuum.version.VersionClassBase attribute)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.model_builder.ModelBuilder.inheritance_args">inheritance_args() (sqlalchemy_continuum.model_builder.ModelBuilder method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.is_excluded_property">is_excluded_property() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.is_modified">is_modified() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+
+      <ul>
+        <li><a href="utilities.html#sqlalchemy_continuum.utils.is_modified">(sqlalchemy_continuum.utils 모듈)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.is_modified_or_deleted">is_modified_or_deleted() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.is_session_modified">is_session_modified() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.is_versioned">is_versioned() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="M">M</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.make_versioned">make_versioned() (sqlalchemy_continuum 모듈)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.make_versions">make_versions() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.many_to_many_criteria">many_to_many_criteria() (sqlalchemy_continuum.relationship_builder.RelationshipBuilder method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.many_to_one_criteria">many_to_one_criteria() (sqlalchemy_continuum.relationship_builder.RelationshipBuilder method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.model_builder.ModelBuilder">ModelBuilder (sqlalchemy_continuum.model_builder 종류)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.version.VersionClassBase.next">next (sqlalchemy_continuum.version.VersionClassBase attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.one_to_many_criteria">one_to_many_criteria() (sqlalchemy_continuum.relationship_builder.RelationshipBuilder method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.option">option() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.parent_class">parent_class() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.positional_args_to_dict">positional_args_to_dict() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.version.VersionClassBase.previous">previous (sqlalchemy_continuum.version.VersionClassBase attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_after_flush">process_after_flush() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_before_flush">process_before_flush() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_operation">process_operation() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.process_query">process_query() (sqlalchemy_continuum.relationship_builder.RelationshipBuilder method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.reflected_relationship">reflected_relationship (sqlalchemy_continuum.relationship_builder.RelationshipBuilder attribute)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.relationship_builder.RelationshipBuilder">RelationshipBuilder (sqlalchemy_continuum.relationship_builder 종류)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.remove_class_configuration_listeners">remove_class_configuration_listeners() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.remove_operations_tracking">remove_operations_tracking() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.remove_session_tracking">remove_session_tracking() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.reset">reset() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+
+      <ul>
+        <li><a href="api.html#sqlalchemy_continuum.VersioningManager.reset">(sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="S">S</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#module-sqlalchemy_continuum">sqlalchemy_continuum (모듈)</a>, <a href="schema.html#module-sqlalchemy_continuum">[1]</a>
+</li>
+      <li><a href="api.html#module-sqlalchemy_continuum.model_builder">sqlalchemy_continuum.model_builder (모듈)</a>
+</li>
+      <li><a href="plugins.html#module-sqlalchemy_continuum.plugins.activity">sqlalchemy_continuum.plugins.activity (모듈)</a>
+</li>
+      <li><a href="plugins.html#module-sqlalchemy_continuum.plugins.flask">sqlalchemy_continuum.plugins.flask (모듈)</a>
+</li>
+      <li><a href="plugins.html#module-sqlalchemy_continuum.plugins.property_mod_tracker">sqlalchemy_continuum.plugins.property_mod_tracker (모듈)</a>
+</li>
+      <li><a href="plugins.html#module-sqlalchemy_continuum.plugins.transaction_changes">sqlalchemy_continuum.plugins.transaction_changes (모듈)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="plugins.html#module-sqlalchemy_continuum.plugins.transaction_meta">sqlalchemy_continuum.plugins.transaction_meta (모듈)</a>
+</li>
+      <li><a href="api.html#module-sqlalchemy_continuum.relationship_builder">sqlalchemy_continuum.relationship_builder (모듈)</a>
+</li>
+      <li><a href="schema.html#module-sqlalchemy_continuum.schema">sqlalchemy_continuum.schema (모듈)</a>
+</li>
+      <li><a href="api.html#module-sqlalchemy_continuum.table_builder">sqlalchemy_continuum.table_builder (모듈)</a>
+</li>
+      <li><a href="api.html#module-sqlalchemy_continuum.unit_of_work">sqlalchemy_continuum.unit_of_work (모듈)</a>
+</li>
+      <li><a href="utilities.html#module-sqlalchemy_continuum.utils">sqlalchemy_continuum.utils (모듈)</a>
+</li>
+      <li><a href="api.html#module-sqlalchemy_continuum.version">sqlalchemy_continuum.version (모듈)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.table_builder.TableBuilder.table_name">table_name (sqlalchemy_continuum.table_builder.TableBuilder attribute)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.table_builder.TableBuilder">TableBuilder (sqlalchemy_continuum.table_builder 종류)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.track_association_operations">track_association_operations() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.track_cloned_connections">track_cloned_connections() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.track_deletes">track_deletes() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.track_inserts">track_inserts() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.track_operations">track_operations() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.track_session">track_session() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.track_updates">track_updates() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.transaction_class">transaction_class() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager.unit_of_work">unit_of_work() (sqlalchemy_continuum.VersioningManager method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork">UnitOfWork (sqlalchemy_continuum.unit_of_work 종류)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="schema.html#sqlalchemy_continuum.schema.update_end_tx_column">update_end_tx_column() (sqlalchemy_continuum.schema 모듈)</a>
+</li>
+      <li><a href="schema.html#sqlalchemy_continuum.schema.update_property_mod_flags">update_property_mod_flags() (sqlalchemy_continuum.schema 모듈)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.update_version_validity">update_version_validity() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="schema.html#sqlalchemy_continuum.vacuum">vacuum() (sqlalchemy_continuum 모듈)</a>
+</li>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.version_class">version_class() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.version_table">version_table() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#sqlalchemy_continuum.unit_of_work.UnitOfWork.version_validity_subquery">version_validity_subquery() (sqlalchemy_continuum.unit_of_work.UnitOfWork method)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.version.VersionClassBase">VersionClassBase (sqlalchemy_continuum.version 종류)</a>
+</li>
+      <li><a href="utilities.html#sqlalchemy_continuum.utils.versioned_objects">versioned_objects() (sqlalchemy_continuum.utils 모듈)</a>
+</li>
+      <li><a href="api.html#sqlalchemy_continuum.VersioningManager">VersioningManager (sqlalchemy_continuum 종류)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

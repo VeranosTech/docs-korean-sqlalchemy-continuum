@@ -1,0 +1,503 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sqlalchemy_continuum.model_builder &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="../../genindex.html" />
+    <link rel="search" title="검색" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">모듈 코드</a> &raquo;</li>
+        
+          <li><a href="../sqlalchemy_continuum.html">sqlalchemy_continuum</a> &raquo;</li>
+        
+      <li>sqlalchemy_continuum.model_builder</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sqlalchemy_continuum.model_builder</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">copy</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">sqlalchemy</span> <span class="k">as</span> <span class="nn">sa</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="k">import</span> <span class="n">declared_attr</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.orm</span> <span class="k">import</span> <span class="n">column_property</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy_utils.functions</span> <span class="k">import</span> <span class="n">get_declarative_base</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">adapt_columns</span><span class="p">,</span> <span class="n">option</span>
+<span class="kn">from</span> <span class="nn">.version</span> <span class="k">import</span> <span class="n">VersionClassBase</span>
+
+
+<span class="k">def</span> <span class="nf">find_closest_versioned_parent</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds the closest versioned parent for current parent model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">class_</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">class_</span> <span class="ow">in</span> <span class="n">manager</span><span class="o">.</span><span class="n">version_class_map</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">version_class_map</span><span class="p">[</span><span class="n">class_</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">versioned_parents</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds all versioned ancestors for current parent model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">class_</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">class_</span> <span class="ow">in</span> <span class="n">manager</span><span class="o">.</span><span class="n">version_class_map</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">manager</span><span class="o">.</span><span class="n">version_class_map</span><span class="p">[</span><span class="n">class_</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">get_base_class</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns all base classes for history model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">option</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;base_classes&#39;</span><span class="p">)</span>
+        <span class="ow">or</span>
+        <span class="p">(</span><span class="n">get_declarative_base</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">version_base</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">parent_cls</span><span class="p">,</span> <span class="n">base_class_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">base_class_factory</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">base_class_factory</span> <span class="o">=</span> <span class="n">get_base_class</span>
+
+    <span class="n">VersionBase</span> <span class="o">=</span> <span class="n">find_closest_versioned_parent</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">parent_cls</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">VersionBase</span><span class="p">:</span>
+        <span class="n">VersionBase</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span>
+            <span class="s1">&#39;VersionBase&#39;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">base_class_factory</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">parent_cls</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">VersionClassBase</span><span class="p">,</span> <span class="p">)),</span>
+            <span class="p">{</span><span class="s1">&#39;__abstract__&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">VersionBase</span>
+
+
+<span class="k">def</span> <span class="nf">copy_mapper_args</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;__mapper_args__&#39;</span><span class="p">):</span>
+        <span class="n">arg_names</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;with_polymorphic&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;polymorphic_identity&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;concrete&#39;</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">arg_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">__mapper_args__</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">__mapper_args__</span><span class="p">[</span><span class="n">arg</span><span class="p">]</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;order_by&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">__mapper_args__</span><span class="p">:</span>
+            <span class="n">arg</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">__mapper_args__</span><span class="p">[</span><span class="s1">&#39;order_by&#39;</span><span class="p">]</span>
+            <span class="c1"># Only allow string based order_by reflection to version</span>
+            <span class="c1"># classes.</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;order_by&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">arg</span>
+
+        <span class="k">if</span> <span class="s1">&#39;polymorphic_on&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">__mapper_args__</span><span class="p">:</span>
+            <span class="n">column</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">__mapper_args__</span><span class="p">[</span><span class="s1">&#39;polymorphic_on&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;polymorphic_on&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;polymorphic_on&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">column</span><span class="o">.</span><span class="n">key</span>
+    <span class="k">return</span> <span class="n">args</span>
+
+
+<div class="viewcode-block" id="ModelBuilder"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.model_builder.ModelBuilder">[문서]</a><span class="k">class</span> <span class="nc">ModelBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    VersionedModelBuilder handles the building of Version models based on</span>
+<span class="sd">    parent table attributes and versioning configuration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">versioning_manager</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param versioning_manager:</span>
+<span class="sd">            VersioningManager object</span>
+<span class="sd">        :param model:</span>
+<span class="sd">            SQLAlchemy declarative model object that acts as a parent for the</span>
+<span class="sd">            built version model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="n">versioning_manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="ModelBuilder.build_parent_relationship"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.model_builder.ModelBuilder.build_parent_relationship">[문서]</a>    <span class="k">def</span> <span class="nf">build_parent_relationship</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a relationship between currently built version class and</span>
+<span class="sd">        parent class (the model whose history the currently build version</span>
+<span class="sd">        class represents).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">foreign_keys</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">primary_key</span><span class="p">:</span>
+                <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                    <span class="o">==</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version_class</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">foreign_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version_class</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="c1"># We need to check if versions relation was already set for parent</span>
+        <span class="c1"># class.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;versions&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">versions</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">version_class</span><span class="p">,</span>
+                <span class="n">primaryjoin</span><span class="o">=</span><span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span><span class="o">*</span><span class="n">conditions</span><span class="p">),</span>
+                <span class="n">foreign_keys</span><span class="o">=</span><span class="n">foreign_keys</span><span class="p">,</span>
+                <span class="n">order_by</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">version_class</span><span class="p">,</span>
+                    <span class="n">option</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">)</span>
+                <span class="p">),</span>
+                <span class="n">lazy</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span>
+                <span class="n">backref</span><span class="o">=</span><span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">backref</span><span class="p">(</span>
+                    <span class="s1">&#39;version_parent&#39;</span>
+                <span class="p">),</span>
+                <span class="n">viewonly</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelBuilder.build_transaction_relationship"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.model_builder.ModelBuilder.build_transaction_relationship">[문서]</a>    <span class="k">def</span> <span class="nf">build_transaction_relationship</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tx_class</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds a relationship between currently built version class and</span>
+<span class="sd">        Transaction class.</span>
+
+<span class="sd">        :param tx_class: Transaction class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Only define transaction relation if it doesn&#39;t already exist in</span>
+        <span class="c1"># parent class.</span>
+
+        <span class="n">transaction_column</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version_class</span><span class="p">,</span>
+            <span class="n">option</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">version_class</span><span class="p">,</span> <span class="s1">&#39;transaction&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">version_class</span><span class="o">.</span><span class="n">transaction</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">orm</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span>
+                <span class="n">tx_class</span><span class="p">,</span>
+                <span class="n">primaryjoin</span><span class="o">=</span><span class="n">tx_class</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">transaction_column</span><span class="p">,</span>
+                <span class="n">foreign_keys</span><span class="o">=</span><span class="p">[</span><span class="n">transaction_column</span><span class="p">],</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelBuilder.base_classes"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.model_builder.ModelBuilder.base_classes">[문서]</a>    <span class="k">def</span> <span class="nf">base_classes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns all base classes for history model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">version_base</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">),</span> <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelBuilder.inheritance_args"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.model_builder.ModelBuilder.inheritance_args">[문서]</a>    <span class="k">def</span> <span class="nf">inheritance_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">version_table</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return mapper inheritance args for currently built history model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">single</span><span class="p">:</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">find_closest_versioned_parent</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+                <span class="c1"># The version classes do not contain foreign keys, hence we</span>
+                <span class="c1"># need to map inheritance condition manually for classes that</span>
+                <span class="c1"># use joined table inheritance</span>
+                <span class="k">if</span> <span class="n">parent</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                    <span class="n">mapper</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+                    <span class="n">inherit_condition</span> <span class="o">=</span> <span class="n">adapt_columns</span><span class="p">(</span>
+                        <span class="n">mapper</span><span class="o">.</span><span class="n">inherit_condition</span>
+                    <span class="p">)</span>
+                    <span class="n">tx_column_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">options</span><span class="p">[</span>
+                        <span class="s1">&#39;transaction_column_name&#39;</span>
+                    <span class="p">]</span>
+                    <span class="n">args</span><span class="p">[</span><span class="s1">&#39;inherit_condition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">and_</span><span class="p">(</span>
+                        <span class="n">inherit_condition</span><span class="p">,</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="n">parent</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="n">tx_column_name</span><span class="p">)</span> <span class="o">==</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="p">,</span> <span class="n">tx_column_name</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="n">args</span><span class="p">[</span><span class="s1">&#39;inherit_foreign_keys&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">version_table</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">column</span><span class="o">.</span><span class="n">key</span><span class="p">]</span>
+                        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span>
+                        <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">primary_key</span>
+                    <span class="p">]</span>
+
+        <span class="n">args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">copy_mapper_args</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">args</span></div>
+
+    <span class="k">def</span> <span class="nf">get_inherited_denormalized_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="n">parent_models</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">versioned_parents</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">))</span>
+        <span class="n">mapper</span> <span class="o">=</span> <span class="n">sa</span><span class="o">.</span><span class="n">inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">parent_models</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">mapper</span><span class="o">.</span><span class="n">single</span> <span class="ow">or</span> <span class="n">mapper</span><span class="o">.</span><span class="n">concrete</span><span class="p">):</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;operation_type_column_name&#39;</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;transaction_column_name&#39;</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;strategy&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;validity&#39;</span><span class="p">:</span>
+                <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">option</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                        <span class="s1">&#39;end_transaction_column_name&#39;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">column_property</span><span class="p">(</span>
+                    <span class="n">table</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">column</span><span class="p">],</span>
+                    <span class="o">*</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">parent_models</span><span class="p">]</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">args</span>
+
+<div class="viewcode-block" id="ModelBuilder.build_model"><a class="viewcode-back" href="../../api.html#sqlalchemy_continuum.model_builder.ModelBuilder.build_model">[문서]</a>    <span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build history model class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="nd">@declared_attr</span>
+        <span class="k">def</span> <span class="nf">mapper_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+            <span class="n">mapper_args</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">mapper_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inheritance_args</span><span class="p">(</span>
+                <span class="bp">cls</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">__table__</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">mapper_args</span>
+
+        <span class="n">args</span><span class="p">[</span><span class="s1">&#39;__mapper_args__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapper_args</span>
+        <span class="n">args</span><span class="p">[</span><span class="s1">&#39;__versioning_manager__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span>
+        <span class="n">args</span><span class="p">[</span><span class="s1">&#39;__version_parent__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">find_closest_versioned_parent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">parent</span> <span class="ow">or</span> <span class="n">parent</span><span class="o">.</span><span class="n">__table__</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">table</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">args</span><span class="p">[</span><span class="s1">&#39;__table__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span>
+
+        <span class="n">args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_inherited_denormalized_columns</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_module_name&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s%s</span><span class="s1">Version&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__module__</span><span class="o">.</span><span class="n">title</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">Version&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_classes</span><span class="p">(),</span> <span class="n">args</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">tx_class</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build history model and relationships to parent model, transaction</span>
+<span class="sd">        log model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># versioned attributes need to be copied for each child class,</span>
+        <span class="c1"># otherwise each child class would share the same __versioned__</span>
+        <span class="c1"># option dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">__versioned__</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">__versioned__</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">__versioning_manager__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_model</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_parent_relationship</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_transaction_relationship</span><span class="p">(</span><span class="n">tx_class</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">version_class</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../_static/language_data.js"></script>
+      <script type="text/javascript" src="../../_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>

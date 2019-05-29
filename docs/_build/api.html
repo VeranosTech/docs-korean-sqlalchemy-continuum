@@ -1,0 +1,1757 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="ko" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="ko" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>API Documentation &mdash; SQLAlchemy-Continuum 1.3.9 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="색인" href="genindex.html" />
+    <link rel="search" title="검색" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SQLAlchemy-Continuum
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="intro.html">소개</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_objects.html">버전 객체</a></li>
+<li class="toctree-l1"><a class="reference internal" href="revert.html">Reverting changes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="queries.html">Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transactions.html">Transactions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="native_versioning.html">Native versioning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="schema.html">Continuum Schema</a></li>
+<li class="toctree-l1"><a class="reference internal" href="alembic.html">Alembic migrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SQLAlchemy-Continuum</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>API Documentation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-sqlalchemy_continuum">
+<span id="api-documentation"></span><h1>API Documentation<a class="headerlink" href="#module-sqlalchemy_continuum" title="제목 주소">¶</a></h1>
+<dl class="function">
+<dt id="sqlalchemy_continuum.make_versioned">
+<code class="descclassname">sqlalchemy_continuum.</code><code class="descname">make_versioned</code><span class="sig-paren">(</span><em>mapper=&lt;function mapper&gt;</em>, <em>session=&lt;class 'sqlalchemy.orm.session.Session'&gt;</em>, <em>manager=&lt;sqlalchemy_continuum.manager.VersioningManager object&gt;</em>, <em>plugins=None</em>, <em>options=None</em>, <em>user_cls='User'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum.html#make_versioned"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.make_versioned" title="정의 주소">¶</a></dt>
+<dd><p>This is the public API function of SQLAlchemy-Continuum for making certain
+mappers and sessions versioned. By default this applies to all mappers and
+all sessions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mapper</strong> -- SQLAlchemy mapper to apply the versioning to.</li>
+<li><strong>session</strong> -- SQLAlchemy session to apply the versioning to. By default this is
+sa.orm.session.Session meaning it applies to all Session subclasses.</li>
+<li><strong>manager</strong> -- SQLAlchemy-Continuum versioning manager.</li>
+<li><strong>plugins</strong> -- Plugins to pass for versioning manager.</li>
+<li><strong>options</strong> -- A dictionary of VersioningManager options.</li>
+<li><strong>user_cls</strong> -- User class which the Transaction class should have relationship to.
+This can either be a class or string name of a class for lazy
+evaluation.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="section" id="versioning-manager">
+<h2>Versioning Manager<a class="headerlink" href="#versioning-manager" title="제목 주소">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy_continuum.VersioningManager">
+<em class="property">class </em><code class="descclassname">sqlalchemy_continuum.</code><code class="descname">VersioningManager</code><span class="sig-paren">(</span><em>unit_of_work_cls=&lt;class 'sqlalchemy_continuum.unit_of_work.UnitOfWork'&gt;</em>, <em>transaction_cls=None</em>, <em>user_cls=None</em>, <em>options={}</em>, <em>plugins=None</em>, <em>builder=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager" title="정의 주소">¶</a></dt>
+<dd><p>VersioningManager delegates versioning configuration operations to builder
+classes and the actual versioning to UnitOfWork class. Manager contains
+configuration options that act as defaults for all versioned classes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><ul class="first last simple">
+<li><strong>unit_of_work_cls</strong> -- The UnitOfWork class to use for initializing UnitOfWork objects for
+versioning</li>
+<li><strong>transaction_cls</strong> -- Transaction class to use for versioning. If None, the default
+Transaction class generated by TransactionFactory will be used.</li>
+<li><strong>user_cls</strong> -- User class which Transaction class should have relationship to. This
+can either be a class or string name of a class for lazy evaluation.</li>
+<li><strong>options</strong> -- Versioning options</li>
+<li><strong>plugins</strong> -- Versioning plugins that listen the events invoked by the manager.</li>
+<li><strong>builder</strong> -- Builder object which handles the building of versioning tables and
+models.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.after_flush">
+<code class="descname">after_flush</code><span class="sig-paren">(</span><em>session</em>, <em>flush_context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.after_flush"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.after_flush" title="정의 주소">¶</a></dt>
+<dd><p>After flush listener for SQLAlchemy sessions. If this manager has
+versioning enabled this listener gets the UnitOfWork associated with
+session's connections and invokes the process_after_flush method
+of that object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.append_association_operation">
+<code class="descname">append_association_operation</code><span class="sig-paren">(</span><em>conn</em>, <em>table_name</em>, <em>params</em>, <em>op</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.append_association_operation"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.append_association_operation" title="정의 주소">¶</a></dt>
+<dd><p>Append history association operation to pending_statements list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.apply_class_configuration_listeners">
+<code class="descname">apply_class_configuration_listeners</code><span class="sig-paren">(</span><em>mapper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.apply_class_configuration_listeners"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.apply_class_configuration_listeners" title="정의 주소">¶</a></dt>
+<dd><p>Applies class configuration listeners for given mapper.</p>
+<p>The listener work in two phases:</p>
+<ol class="arabic simple">
+<li><dl class="first docutils">
+<dt>Class instrumentation phase</dt>
+<dd>The first listeners listens to class instrumentation event and
+handles the collecting of versioned models and adds them to
+the pending_classes list.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>After class configuration phase</dt>
+<dd>The second listener listens to after class configuration event and
+handles the actual history model generation based on list that
+was collected during class instrumenation phase.</dd>
+</dl>
+</li>
+</ol>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>mapper</strong> -- SQLAlchemy mapper to apply the class configuration listeners to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.before_flush">
+<code class="descname">before_flush</code><span class="sig-paren">(</span><em>session</em>, <em>flush_context</em>, <em>instances</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.before_flush"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.before_flush" title="정의 주소">¶</a></dt>
+<dd><p>Before flush listener for SQLAlchemy sessions. If this manager has
+versioning enabled this listener invokes the process before flush of
+associated UnitOfWork object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.clear"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.clear" title="정의 주소">¶</a></dt>
+<dd><p>Simple SQLAlchemy listener that is being invoked after successful
+transaction commit or when transaction rollback occurs. The purpose of
+this listener is to reset this UnitOfWork back to its initialization
+state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.create_transaction_model">
+<code class="descname">create_transaction_model</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.create_transaction_model"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.create_transaction_model" title="정의 주소">¶</a></dt>
+<dd><p>Create Transaction class but only if it doesn't already exist in
+declarative model registry.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.is_excluded_property">
+<code class="descname">is_excluded_property</code><span class="sig-paren">(</span><em>model</em>, <em>key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.is_excluded_property"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.is_excluded_property" title="정의 주소">¶</a></dt>
+<dd><p>Returns whether or not given property of given model is excluded from
+the associated history model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> -- SQLAlchemy declarative model object.</li>
+<li><strong>key</strong> -- Model property key</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.option">
+<code class="descname">option</code><span class="sig-paren">(</span><em>model</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.option"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.option" title="정의 주소">¶</a></dt>
+<dd><p>Returns the option value for given model. If the option is not found
+from given model falls back to default values of this manager object.
+If the option is not found from this manager object either this method
+throws a KeyError.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model</strong> -- SQLAlchemy declarative object</li>
+<li><strong>name</strong> -- name of the versioning option</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.positional_args_to_dict">
+<code class="descname">positional_args_to_dict</code><span class="sig-paren">(</span><em>op</em>, <em>statement</em>, <em>params</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.positional_args_to_dict"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.positional_args_to_dict" title="정의 주소">¶</a></dt>
+<dd><p>On some drivers (eg sqlite) generated INSERT statements use positional
+args instead of key value dictionary. This method converts positional
+args to key value dict.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><ul class="first last simple">
+<li><strong>statement</strong> -- SQL statement string</li>
+<li><strong>params</strong> -- tuple or dict of statement parameters</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.remove_class_configuration_listeners">
+<code class="descname">remove_class_configuration_listeners</code><span class="sig-paren">(</span><em>mapper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.remove_class_configuration_listeners"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.remove_class_configuration_listeners" title="정의 주소">¶</a></dt>
+<dd><p>Remove versioning class configuration listeners from specified mapper.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>mapper</strong> -- mapper to remove class configuration listeners from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.remove_operations_tracking">
+<code class="descname">remove_operations_tracking</code><span class="sig-paren">(</span><em>mapper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.remove_operations_tracking"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.remove_operations_tracking" title="정의 주소">¶</a></dt>
+<dd><p>Remove listeners from specified mapper that track SQL inserts, updates
+and deletes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>mapper</strong> -- mapper to remove the SQL operations tracking listeners from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.remove_session_tracking">
+<code class="descname">remove_session_tracking</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.remove_session_tracking"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.remove_session_tracking" title="정의 주소">¶</a></dt>
+<dd><p>Remove listeners that track the operations (flushing, committing and
+rolling back) of given session. This method should be used in
+conjunction with <cite>remove_operations_tracking</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session to remove the operations tracking from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.reset"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.reset" title="정의 주소">¶</a></dt>
+<dd><p>Resets this manager's internal state.</p>
+<p>This method should be used in test cases that create models on the fly.
+Otherwise history_class_map and some other variables would be polluted
+by no more used model classes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.track_association_operations">
+<code class="descname">track_association_operations</code><span class="sig-paren">(</span><em>conn</em>, <em>cursor</em>, <em>statement</em>, <em>parameters</em>, <em>context</em>, <em>executemany</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.track_association_operations"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.track_association_operations" title="정의 주소">¶</a></dt>
+<dd><p>Track association operations and adds the generated history
+association operations to pending_statements list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.track_cloned_connections">
+<code class="descname">track_cloned_connections</code><span class="sig-paren">(</span><em>c</em>, <em>opt</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.track_cloned_connections"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.track_cloned_connections" title="정의 주소">¶</a></dt>
+<dd><p>Track cloned connections from association tables.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.track_deletes">
+<code class="descname">track_deletes</code><span class="sig-paren">(</span><em>uow</em>, <em>target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.track_deletes"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.track_deletes" title="정의 주소">¶</a></dt>
+<dd><p>Track object deletion operations. Whenever object is deleted it is
+added to this UnitOfWork's internal operations dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.track_inserts">
+<code class="descname">track_inserts</code><span class="sig-paren">(</span><em>uow</em>, <em>target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.track_inserts"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.track_inserts" title="정의 주소">¶</a></dt>
+<dd><p>Track object insert operations. Whenever object is inserted it is
+added to this UnitOfWork's internal operations dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.track_operations">
+<code class="descname">track_operations</code><span class="sig-paren">(</span><em>mapper</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.track_operations"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.track_operations" title="정의 주소">¶</a></dt>
+<dd><p>Attach listeners for specified mapper that track SQL inserts, updates
+and deletes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>mapper</strong> -- mapper to track the SQL operations from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.track_session">
+<code class="descname">track_session</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.track_session"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.track_session" title="정의 주소">¶</a></dt>
+<dd><p>Attach listeners that track the operations (flushing, committing and
+rolling back) of given session. This method should be used in
+conjunction with <cite>track_operations</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session to track the operations from</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.track_updates">
+<code class="descname">track_updates</code><span class="sig-paren">(</span><em>uow</em>, <em>target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.track_updates"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.track_updates" title="정의 주소">¶</a></dt>
+<dd><p>Track object update operations. Whenever object is updated it is
+added to this UnitOfWork's internal operations dictionary.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.VersioningManager.unit_of_work">
+<code class="descname">unit_of_work</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/manager.html#VersioningManager.unit_of_work"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.VersioningManager.unit_of_work" title="정의 주소">¶</a></dt>
+<dd><p>Return the associated SQLAlchemy-Continuum UnitOfWork object for given
+SQLAlchemy session object.</p>
+<p>If no UnitOfWork object exists for given object then this method tries
+to create one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-sqlalchemy_continuum.table_builder">
+<span id="builders"></span><h2>Builders<a class="headerlink" href="#module-sqlalchemy_continuum.table_builder" title="제목 주소">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy_continuum.table_builder.TableBuilder">
+<em class="property">class </em><code class="descclassname">sqlalchemy_continuum.table_builder.</code><code class="descname">TableBuilder</code><span class="sig-paren">(</span><em>versioning_manager</em>, <em>parent_table</em>, <em>model=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/table_builder.html#TableBuilder"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.table_builder.TableBuilder" title="정의 주소">¶</a></dt>
+<dd><p>TableBuilder handles the building of version tables based on parent
+table's structure and versioning configuration options.</p>
+<dl class="attribute">
+<dt id="sqlalchemy_continuum.table_builder.TableBuilder.table_name">
+<code class="descname">table_name</code><a class="headerlink" href="#sqlalchemy_continuum.table_builder.TableBuilder.table_name" title="정의 주소">¶</a></dt>
+<dd><p>Returns the version table name for current parent table.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-sqlalchemy_continuum.model_builder"></span><dl class="class">
+<dt id="sqlalchemy_continuum.model_builder.ModelBuilder">
+<em class="property">class </em><code class="descclassname">sqlalchemy_continuum.model_builder.</code><code class="descname">ModelBuilder</code><span class="sig-paren">(</span><em>versioning_manager</em>, <em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/model_builder.html#ModelBuilder"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.model_builder.ModelBuilder" title="정의 주소">¶</a></dt>
+<dd><p>VersionedModelBuilder handles the building of Version models based on
+parent table attributes and versioning configuration.</p>
+<dl class="method">
+<dt id="sqlalchemy_continuum.model_builder.ModelBuilder.base_classes">
+<code class="descname">base_classes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/model_builder.html#ModelBuilder.base_classes"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.model_builder.ModelBuilder.base_classes" title="정의 주소">¶</a></dt>
+<dd><p>Returns all base classes for history model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.model_builder.ModelBuilder.build_model">
+<code class="descname">build_model</code><span class="sig-paren">(</span><em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/model_builder.html#ModelBuilder.build_model"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.model_builder.ModelBuilder.build_model" title="정의 주소">¶</a></dt>
+<dd><p>Build history model class.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.model_builder.ModelBuilder.build_parent_relationship">
+<code class="descname">build_parent_relationship</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/model_builder.html#ModelBuilder.build_parent_relationship"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.model_builder.ModelBuilder.build_parent_relationship" title="정의 주소">¶</a></dt>
+<dd><p>Builds a relationship between currently built version class and
+parent class (the model whose history the currently build version
+class represents).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.model_builder.ModelBuilder.build_transaction_relationship">
+<code class="descname">build_transaction_relationship</code><span class="sig-paren">(</span><em>tx_class</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/model_builder.html#ModelBuilder.build_transaction_relationship"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.model_builder.ModelBuilder.build_transaction_relationship" title="정의 주소">¶</a></dt>
+<dd><p>Builds a relationship between currently built version class and
+Transaction class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>tx_class</strong> -- Transaction class</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.model_builder.ModelBuilder.inheritance_args">
+<code class="descname">inheritance_args</code><span class="sig-paren">(</span><em>cls</em>, <em>version_table</em>, <em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/model_builder.html#ModelBuilder.inheritance_args"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.model_builder.ModelBuilder.inheritance_args" title="정의 주소">¶</a></dt>
+<dd><p>Return mapper inheritance args for currently built history model.</p>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-sqlalchemy_continuum.relationship_builder"></span><dl class="class">
+<dt id="sqlalchemy_continuum.relationship_builder.RelationshipBuilder">
+<em class="property">class </em><code class="descclassname">sqlalchemy_continuum.relationship_builder.</code><code class="descname">RelationshipBuilder</code><span class="sig-paren">(</span><em>versioning_manager</em>, <em>model</em>, <em>property_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/relationship_builder.html#RelationshipBuilder"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.relationship_builder.RelationshipBuilder" title="정의 주소">¶</a></dt>
+<dd><dl class="method">
+<dt id="sqlalchemy_continuum.relationship_builder.RelationshipBuilder.association_subquery">
+<code class="descname">association_subquery</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/relationship_builder.html#RelationshipBuilder.association_subquery"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.association_subquery" title="정의 주소">¶</a></dt>
+<dd><p>Returns an EXISTS clause that checks if an association exists for given
+SQLAlchemy declarative object. This query is used by
+many_to_many_criteria method.</p>
+<p>Example query:</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>EXISTS (</dt>
+<dd><p class="first">SELECT 1
+FROM article_tag_version
+WHERE article_id = 3
+AND tag_id = tags_version.id
+AND operation_type != 2
+AND EXISTS (</p>
+<blockquote>
+<div><p>SELECT 1
+FROM article_tag_version as article_tag_version2
+WHERE article_tag_version2.tag_id = article_tag_version.tag_id
+AND article_tag_version2.tx_id &lt;=5
+GROUP BY article_tag_version2.tag_id
+HAVING</p>
+<blockquote>
+<div>MAX(article_tag_version2.tx_id) =
+article_tag_version.tx_id</div></blockquote>
+</div></blockquote>
+<p class="last">)</p>
+</dd>
+</dl>
+<p>)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>obj</strong> -- SQLAlchemy declarative object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.relationship_builder.RelationshipBuilder.build_association_version_tables">
+<code class="descname">build_association_version_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/relationship_builder.html#RelationshipBuilder.build_association_version_tables"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.build_association_version_tables" title="정의 주소">¶</a></dt>
+<dd><p>Builds many-to-many association version table for given property.
+Association version tables are used for tracking change history of
+many-to-many associations.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.relationship_builder.RelationshipBuilder.many_to_many_criteria">
+<code class="descname">many_to_many_criteria</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/relationship_builder.html#RelationshipBuilder.many_to_many_criteria"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.many_to_many_criteria" title="정의 주소">¶</a></dt>
+<dd><p>Returns the many-to-many query.</p>
+<p>Looks up remote items through associations and for each item returns
+returns the last version with a transaction less than or equal to the
+transaction of <cite>obj</cite>. This must hold true for both the association and
+the remote relation items.</p>
+<p>Select all tags of article with id 3 and transaction 5</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<p>SELECT tags_version.*
+FROM tags_version
+WHERE EXISTS (</p>
+<blockquote>
+<div><p>SELECT 1
+FROM article_tag_version
+WHERE article_id = 3
+AND tag_id = tags_version.id
+AND operation_type != 2
+AND EXISTS (</p>
+<blockquote>
+<div><p>SELECT 1
+FROM article_tag_version as article_tag_version2
+WHERE article_tag_version2.tag_id = article_tag_version.tag_id
+AND article_tag_version2.tx_id &lt;= 5
+GROUP BY article_tag_version2.tag_id
+HAVING</p>
+<blockquote>
+<div>MAX(article_tag_version2.tx_id) =
+article_tag_version.tx_id</div></blockquote>
+</div></blockquote>
+<p>)</p>
+</div></blockquote>
+<p>)
+AND EXISTS (</p>
+<blockquote>
+<div>SELECT 1
+FROM tags_version as tags_version_2
+WHERE tags_version_2.id = tags_version.id
+AND tags_version_2.tx_id &lt;= 5
+GROUP BY tags_version_2.id
+HAVING MAX(tags_version_2.tx_id) = tags_version.tx_id</div></blockquote>
+<p>)
+AND operation_type != 2</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.relationship_builder.RelationshipBuilder.many_to_one_criteria">
+<code class="descname">many_to_one_criteria</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/relationship_builder.html#RelationshipBuilder.many_to_one_criteria"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.many_to_one_criteria" title="정의 주소">¶</a></dt>
+<dd><p>Returns the many-to-one query.</p>
+<p>Returns the item on the 'one' side with the highest transaction id
+as long as it is less or equal to the transaction id of the <cite>obj</cite>.</p>
+<p>Look up the Article of a Tag with article_id = 4 and
+transaction_id = 5</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<p>SELECT *
+FROM articles_version
+WHERE id = 4
+AND transaction_id = (</p>
+<blockquote>
+<div>SELECT max(transaction_id)
+FROM articles_version
+WHERE transaction_id &lt;= 5
+AND id = 4</div></blockquote>
+<p>)
+AND operation_type != 2</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.relationship_builder.RelationshipBuilder.one_to_many_criteria">
+<code class="descname">one_to_many_criteria</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/relationship_builder.html#RelationshipBuilder.one_to_many_criteria"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.one_to_many_criteria" title="정의 주소">¶</a></dt>
+<dd><p>Returns the one-to-many query.</p>
+<p>For each item on the 'many' side, returns its latest version as long as
+the transaction of that version is less than equal of the transaction
+of <cite>obj</cite>.</p>
+<p>Using the Article-Tags relationship, where we look for tags of
+article_version with id = 3 and transaction = 5 the sql produced is</p>
+<div class="highlight-sql notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+<p>SELECT tags_version.*
+FROM tags_version
+WHERE tags_version.article_id = 3
+AND tags_version.operation_type != 2
+AND EXISTS (</p>
+<blockquote>
+<div><p>SELECT 1
+FROM tags_version as tags_version_last
+WHERE tags_version_last.transaction_id &lt;= 5
+AND tags_version_last.id = tags_version.id
+GROUP BY tags_version_last.id
+HAVING</p>
+<blockquote>
+<div>MAX(tags_version_last.transaction_id) =
+tags_version.transaction_id</div></blockquote>
+</div></blockquote>
+<p>)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.relationship_builder.RelationshipBuilder.process_query">
+<code class="descname">process_query</code><span class="sig-paren">(</span><em>query</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/relationship_builder.html#RelationshipBuilder.process_query"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.process_query" title="정의 주소">¶</a></dt>
+<dd><p>Process given SQLAlchemy Query object depending on the associated
+RelationshipProperty object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>query</strong> -- SQLAlchemy Query object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy_continuum.relationship_builder.RelationshipBuilder.reflected_relationship">
+<code class="descname">reflected_relationship</code><a class="headerlink" href="#sqlalchemy_continuum.relationship_builder.RelationshipBuilder.reflected_relationship" title="정의 주소">¶</a></dt>
+<dd><p>Builds a reflected one-to-many, one-to-one and many-to-one
+relationship between two version classes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-sqlalchemy_continuum.unit_of_work">
+<span id="unitofwork"></span><h2>UnitOfWork<a class="headerlink" href="#module-sqlalchemy_continuum.unit_of_work" title="제목 주소">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork">
+<em class="property">class </em><code class="descclassname">sqlalchemy_continuum.unit_of_work.</code><code class="descname">UnitOfWork</code><span class="sig-paren">(</span><em>manager</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork" title="정의 주소">¶</a></dt>
+<dd><dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.assign_attributes">
+<code class="descname">assign_attributes</code><span class="sig-paren">(</span><em>parent_obj</em>, <em>version_obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.assign_attributes"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.assign_attributes" title="정의 주소">¶</a></dt>
+<dd><p>Assign attributes values from parent object to version object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><ul class="first last simple">
+<li><strong>parent_obj</strong> -- Parent object to get the attribute values from</li>
+<li><strong>version_obj</strong> -- Version object to assign the attribute values to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.create_association_versions">
+<code class="descname">create_association_versions</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.create_association_versions"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_association_versions" title="정의 주소">¶</a></dt>
+<dd><p>Creates association table version records for given session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.create_transaction">
+<code class="descname">create_transaction</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.create_transaction"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_transaction" title="정의 주소">¶</a></dt>
+<dd><p>Create transaction object for given SQLAlchemy session.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.create_version_objects">
+<code class="descname">create_version_objects</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.create_version_objects"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.create_version_objects" title="정의 주소">¶</a></dt>
+<dd><p>Create version objects for given session based on operations collected
+by insert, update and deleted trackers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.get_or_create_version_object">
+<code class="descname">get_or_create_version_object</code><span class="sig-paren">(</span><em>target</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.get_or_create_version_object"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.get_or_create_version_object" title="정의 주소">¶</a></dt>
+<dd><p>Return version object for given parent object. If no version object
+exists for given parent object, create one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>target</strong> -- Parent object to create the version object for</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.has_changes">
+<code class="descname">has_changes</code><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.has_changes" title="정의 주소">¶</a></dt>
+<dd><p>Return whether or not this unit of work has changes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.is_modified">
+<code class="descname">is_modified</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.is_modified"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.is_modified" title="정의 주소">¶</a></dt>
+<dd><p>Return whether or not given session has been modified. Session has been
+modified if any versioned property of any version object in given
+session has been modified or if any of the plugins returns that
+session has been modified.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.make_versions">
+<code class="descname">make_versions</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.make_versions"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.make_versions" title="정의 주소">¶</a></dt>
+<dd><p>Create transaction, transaction changes records, version objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.process_after_flush">
+<code class="descname">process_after_flush</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.process_after_flush"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_after_flush" title="정의 주소">¶</a></dt>
+<dd><p>After flush processor for given session.</p>
+<p>Creates version objects for all modified versioned parent objects that
+were affected during the flush phase.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.process_before_flush">
+<code class="descname">process_before_flush</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.process_before_flush"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_before_flush" title="정의 주소">¶</a></dt>
+<dd><p>Before flush processor for given session.</p>
+<p>This method creates a version session which is later on used for the
+creation of version objects. It also creates Transaction object for the
+current transaction and invokes before_flush template method on all
+plugins.</p>
+<p>If the given session had no relevant modifications regarding versioned
+objects this method does nothing.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>session</strong> -- SQLAlchemy session object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.process_operation">
+<code class="descname">process_operation</code><span class="sig-paren">(</span><em>operation</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.process_operation"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.process_operation" title="정의 주소">¶</a></dt>
+<dd><p>Process given operation object. The operation processing has x stages:</p>
+<ol class="arabic simple">
+<li>Get or create a version object for given parent object</li>
+<li>Assign the operation type for this object</li>
+<li>Invoke listeners</li>
+<li>Update version validity in case validity strategy is used</li>
+<li>Mark operation as processed</li>
+</ol>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>operation</strong> -- Operation object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><em>session=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.reset"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.reset" title="정의 주소">¶</a></dt>
+<dd><p>Reset the internal state of this UnitOfWork object. Normally this is
+called after transaction has been committed or rolled back.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.update_version_validity">
+<code class="descname">update_version_validity</code><span class="sig-paren">(</span><em>parent</em>, <em>version_obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.update_version_validity"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.update_version_validity" title="정의 주소">¶</a></dt>
+<dd><p>Updates previous version object end_transaction_id based on given
+parent object and newly created version object.</p>
+<p>This method is only used when using 'validity' versioning strategy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>parent</strong> -- SQLAlchemy declarative parent object</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Parem version_obj:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">SQLAlchemy declarative version object</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.version_validity_subquery" title="sqlalchemy_continuum.unit_of_work.UnitOfWork.version_validity_subquery"><code class="xref py py-func docutils literal notranslate"><span class="pre">version_validity_subquery()</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlalchemy_continuum.unit_of_work.UnitOfWork.version_validity_subquery">
+<code class="descname">version_validity_subquery</code><span class="sig-paren">(</span><em>parent</em>, <em>version_obj</em>, <em>alias=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sqlalchemy_continuum/unit_of_work.html#UnitOfWork.version_validity_subquery"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.version_validity_subquery" title="정의 주소">¶</a></dt>
+<dd><p>Return the subquery needed by <a class="reference internal" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.update_version_validity" title="sqlalchemy_continuum.unit_of_work.UnitOfWork.update_version_validity"><code class="xref py py-func docutils literal notranslate"><span class="pre">update_version_validity()</span></code></a>.</p>
+<p>This method is only used when using 'validity' versioning strategy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">매개 변수:</th><td class="field-body"><strong>parent</strong> -- SQLAlchemy declarative parent object</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Parem version_obj:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">SQLAlchemy declarative version object</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">더 보기</p>
+<p class="last"><a class="reference internal" href="#sqlalchemy_continuum.unit_of_work.UnitOfWork.update_version_validity" title="sqlalchemy_continuum.unit_of_work.UnitOfWork.update_version_validity"><code class="xref py py-func docutils literal notranslate"><span class="pre">update_version_validity()</span></code></a></p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-sqlalchemy_continuum.version">
+<span id="history-class"></span><h2>History class<a class="headerlink" href="#module-sqlalchemy_continuum.version" title="제목 주소">¶</a></h2>
+<dl class="class">
+<dt id="sqlalchemy_continuum.version.VersionClassBase">
+<em class="property">class </em><code class="descclassname">sqlalchemy_continuum.version.</code><code class="descname">VersionClassBase</code><a class="reference internal" href="_modules/sqlalchemy_continuum/version.html#VersionClassBase"><span class="viewcode-link">[소스]</span></a><a class="headerlink" href="#sqlalchemy_continuum.version.VersionClassBase" title="정의 주소">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="sqlalchemy_continuum.version.VersionClassBase.changeset">
+<code class="descname">changeset</code><a class="headerlink" href="#sqlalchemy_continuum.version.VersionClassBase.changeset" title="정의 주소">¶</a></dt>
+<dd><p>Return a dictionary of changed fields in this version with keys as
+field names and values as lists with first value as the old field value
+and second list value as the new value.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy_continuum.version.VersionClassBase.index">
+<code class="descname">index</code><a class="headerlink" href="#sqlalchemy_continuum.version.VersionClassBase.index" title="정의 주소">¶</a></dt>
+<dd><p>Return the index of this version in the version history.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy_continuum.version.VersionClassBase.next">
+<code class="descname">next</code><a class="headerlink" href="#sqlalchemy_continuum.version.VersionClassBase.next" title="정의 주소">¶</a></dt>
+<dd><p>Returns the next version relative to this version in the version
+history. If current version is the last version this method returns
+None.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="sqlalchemy_continuum.version.VersionClassBase.previous">
+<code class="descname">previous</code><a class="headerlink" href="#sqlalchemy_continuum.version.VersionClassBase.previous" title="정의 주소">¶</a></dt>
+<dd><p>Returns the previous version relative to this version in the version
+history. If current version is the first version this method returns
+None.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="changelog">
+<h2>Changelog<a class="headerlink" href="#changelog" title="제목 주소">¶</a></h2>
+<p>Here you can see the full list of changes between each SQLAlchemy-Continuum release.</p>
+<div class="section" id="id1">
+<h3>1.3.9 (2019-03-19)<a class="headerlink" href="#id1" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added SA 1.3 support</li>
+<li>Reverted trigger creation from 1.3.7</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h3>1.3.8 (2019-02-27)<a class="headerlink" href="#id2" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed revert to ignore non-columns (#197, courtesy of mauler)</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h3>1.3.7 (2019-01-13)<a class="headerlink" href="#id3" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fix trigger creation during alembic migrations (#209, courtesy of lyndsysimon)</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h3>1.3.6 (2018-07-30)<a class="headerlink" href="#id4" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed ResourceClosedErrors from connections leaking when using an external transaction (#196, courtesy of vault)</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h3>1.3.5 (2018-06-03)<a class="headerlink" href="#id5" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Track cloned connections (#167, courtesy of netcriptus)</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h3>1.3.4 (2018-03-07)<a class="headerlink" href="#id6" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Exclude many-to-many properties from versioning if they are added in exclude parameter (#169, courtesy of fuhrysteve)</li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h3>1.3.3 (2017-11-05)<a class="headerlink" href="#id7" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed changeset when updating object in same transaction as inserting it (#141, courtesy of oinopion)</li>
+</ul>
+</div>
+<div class="section" id="id8">
+<h3>1.3.2 (2017-10-12)<a class="headerlink" href="#id8" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed multiple schema handling (#132, courtesy of vault)</li>
+</ul>
+</div>
+<div class="section" id="id9">
+<h3>1.3.1 (2017-06-28)<a class="headerlink" href="#id9" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed subclass retrieval for closest_matching_table (#163, courtesy of debonzi)</li>
+</ul>
+</div>
+<div class="section" id="id10">
+<h3>1.3.0 (2017-01-30)<a class="headerlink" href="#id10" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Dropped py2.6 support</li>
+<li>Fixed memory leaks with UnitOfWork instances (#131, courtesy of quantus)</li>
+</ul>
+</div>
+<div class="section" id="id11">
+<h3>1.2.4 (2016-01-10)<a class="headerlink" href="#id11" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added explicit sequence names for Oracle (#118, courtesy of apfeiffer1)</li>
+</ul>
+</div>
+<div class="section" id="id12">
+<h3>1.2.3 (2016-01-10)<a class="headerlink" href="#id12" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added use_module_name configuration option (#119, courtesy of kyheo)</li>
+</ul>
+</div>
+<div class="section" id="id13">
+<h3>1.2.2 (2015-12-08)<a class="headerlink" href="#id13" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed some relationship changes not counted as modifications (#116, courtesy of tvuotila)</li>
+</ul>
+</div>
+<div class="section" id="id14">
+<h3>1.2.1 (2015-09-27)<a class="headerlink" href="#id14" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed deep joined table inheritance handling (#105, courtesy of piotr-dobrogost)</li>
+<li>Fixed naive assumption of related User model always having id column (#107, courtesy of avilaton)</li>
+<li>Fixed one-to-many relationship reverting (#102, courtesy of sdorazio)</li>
+</ul>
+</div>
+<div class="section" id="id15">
+<h3>1.2.0 (2015-07-31)<a class="headerlink" href="#id15" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Removed generated changes attribute from version classes. This attribute can be accessed through <cite>transaction.changes</cite></li>
+<li>Removed is_modified checking from insert operations</li>
+</ul>
+</div>
+<div class="section" id="id16">
+<h3>1.1.5 (2014-12-28)<a class="headerlink" href="#id16" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added smart primary key type inspection for user class (#86, courtesy of mattupstate)</li>
+<li>Added support for self-referential version relationship reflection (#88, courtesy of dtheodor)</li>
+</ul>
+</div>
+<div class="section" id="id17">
+<h3>1.1.4 (2014-12-06)<a class="headerlink" href="#id17" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed One-To-Many version relationship handling (#82, courtesy of dtheodor)</li>
+<li>Fixed Many-To-Many version relationship handling (#83, courtesy of dtheodor)</li>
+<li>Fixed inclusion and exclusion of aliased columns</li>
+<li>Removed automatic exclusion of auto-assigned datetime columns and tsvector columns (explicit is better than implicit)</li>
+</ul>
+</div>
+<div class="section" id="id18">
+<h3>1.1.3 (2014-10-23)<a class="headerlink" href="#id18" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Made FlaskPlugin accepts overriding of current_user_id_factory and remote_addr_factory</li>
+</ul>
+</div>
+<div class="section" id="id19">
+<h3>1.1.2 (2014-10-07)<a class="headerlink" href="#id19" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed identifier quoting in trigger syncing</li>
+</ul>
+</div>
+<div class="section" id="id20">
+<h3>1.1.1 (2014-10-07)<a class="headerlink" href="#id20" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed native versioning trigger syncing</li>
+</ul>
+</div>
+<div class="section" id="id21">
+<h3>1.1.0 (2014-10-02)<a class="headerlink" href="#id21" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added Python 3.4 to test suite</li>
+<li>Added optional native trigger based versioning for PostgreSQL dialect</li>
+<li>Added create_models option</li>
+<li>Added count_versions utility function</li>
+<li>Fixed custom transaction column name handling with models using joined table inheritance</li>
+<li>Fixed subquery strategy support for models using joined table inheritance</li>
+<li>Fixed savepoint handling</li>
+<li>Fixed version model building when no versioned models were found (previously threw AttributeError)</li>
+<li>Replaced plugin template methods before_create_tx_object and after_create_tx_object with transaction_args to better cope with native versioning</li>
+</ul>
+</div>
+<div class="section" id="id22">
+<h3>1.0.3 (2014-07-16)<a class="headerlink" href="#id22" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added __repr__ for Operations class</li>
+<li>Fixed an issue where assigning unmodified object's attributes in user defined before flush listener would raise TypeError in UnitOfWork</li>
+</ul>
+</div>
+<div class="section" id="id23">
+<h3>1.0.2 (2014-07-11)<a class="headerlink" href="#id23" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Allowed easier overriding of PropertyModTracker column creation</li>
+<li>Rewrote join table inheritance handling schematics (now working with SA 0.9.6)</li>
+<li>SQLAlchemy-Utils dependency updated to 0.26.5</li>
+</ul>
+</div>
+<div class="section" id="id24">
+<h3>1.0.1 (2014-06-18)<a class="headerlink" href="#id24" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed an issue where deleting an object with deferred columns would throw ObjectDeletedError.</li>
+<li>Made viewonly relationships with association tables not register the association table to versioning manager registry.</li>
+</ul>
+</div>
+<div class="section" id="id25">
+<h3>1.0 (2014-06-16)<a class="headerlink" href="#id25" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added __repr__ for Transaction class, issue #59</li>
+<li>Made transaction_cls of VersioningManager configurable.</li>
+<li>Removed generic relationships from transaction class to versioned classes.</li>
+<li>Removed generic relationships from transaction changes class to versioned classes.</li>
+<li>Removed relation_naming_function (no longer needed)</li>
+<li>Moved get_bind to SQLAlchemy-Utils</li>
+<li>Removed inflection package from dependencies (no longer needed)</li>
+<li>SQLAlchemy-Utils dependency updated to 0.26.2</li>
+</ul>
+</div>
+<div class="section" id="b5-2014-05-07">
+<h3>1.0b5 (2014-05-07)<a class="headerlink" href="#b5-2014-05-07" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added order_by mapper arg ignoring for version class reflection if other than string argument is used</li>
+<li>Added support for customizing the User class which the Transaction class should have relationship to (issue #53)</li>
+<li>Changed get_versioning_manager to throw ClassNotVersioned exception if first argument is not a versioned class</li>
+<li>Fixed relationship reflection from versioned classes to non versioned classes (issue #52)</li>
+<li>SQLAlchemy-Utils dependency updated to 0.25.4</li>
+</ul>
+</div>
+<div class="section" id="b4-2014-04-20">
+<h3>1.0-b4 (2014-04-20)<a class="headerlink" href="#b4-2014-04-20" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed many-to-many unit of work inspection when using engine bind instead of collection bind</li>
+<li>Fixed various issues if primary key aliases were used in declarative models</li>
+<li>Fixed an issue where association versioning would not work with custom transaction column name</li>
+<li>SQLAlchemy-Utils dependency updated to 0.25.3</li>
+</ul>
+</div>
+<div class="section" id="b3-2014-04-19">
+<h3>1.0-b3 (2014-04-19)<a class="headerlink" href="#b3-2014-04-19" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added support for concrete inheritance</li>
+<li>Added order_by mapper arg reflection to version classes</li>
+<li>Added support for column_prefix mapper arg</li>
+<li>Made model builder copy inheritance mapper args to version classes from parent classes</li>
+<li>Fixed end transaction id setting for join table inheritance classes. Now end transaction id is set explicitly to all tables in inheritance hierarchy.</li>
+<li>Fixed single table inheritance handling</li>
+</ul>
+</div>
+<div class="section" id="b2-2014-04-09">
+<h3>1.0-b2 (2014-04-09)<a class="headerlink" href="#b2-2014-04-09" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added some schema tools to help migrating between different plugins and versioning strategies</li>
+<li>Added remove_versioning utility function, see issue #45</li>
+<li>Added order_by transaction_id default to versions relationship</li>
+<li>Fixed PropertyModTrackerPlugin association table handling.</li>
+<li>Fixed get_bind schematics (Flask-SQLAlchemy integration wasn't working)</li>
+<li>Fixed a bug where committing a session without objects would result in KeyError</li>
+<li>SQLAlchemy dependency updated to 0.9.4</li>
+</ul>
+</div>
+<div class="section" id="b1-2014-03-14">
+<h3>1.0-b1 (2014-03-14)<a class="headerlink" href="#b1-2014-03-14" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added new plugin architecture</li>
+<li>Added ActivityPlugin</li>
+<li>Naming conventions change: History -&gt; Version (to be consistent throughout Continuum)</li>
+<li>Naming convention change: TransactionLog -&gt; Transaction</li>
+<li>Rewritten reflected relationship model for version classes. Only dynamic relationships are now reflected as dynamic relationships. Other relationships return either lists or scalars.</li>
+<li>One-To-One relationship support for reflected version class relationships</li>
+<li>Removed tx_context context manager. Transaction objects can now be created manually and user has direct access to the parameters of this object.</li>
+<li>Removed tx_meta context manager. Transaction meta objects can now be created explicitly.</li>
+<li>Fixed association reverting when the relationship uses uselist=False</li>
+<li>Fixed one-to-many directed relationship reverting when the relationship uses uselist=False</li>
+<li>Fixed many-to-many relationship handling when multiple links were created during the same transaction</li>
+<li>Added indexes to operation_type, transaction_id and end_transaction_id columns of version classes</li>
+<li>Deprecated extensions</li>
+<li>SQLAlchemy-Utils dependency updated to 0.25.0</li>
+</ul>
+</div>
+<div class="section" id="id26">
+<h3>0.10.3 (2014-02-27)<a class="headerlink" href="#id26" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed version next / previous handling</li>
+<li>SQLAlchemy dependency updated to 0.9.3</li>
+<li>Fixed column onupdate to history table reflection (issue #47)</li>
+</ul>
+</div>
+<div class="section" id="id27">
+<h3>0.10.2 (2014-02-10)<a class="headerlink" href="#id27" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed MySQL support (issue #36)</li>
+<li>Added SQLite and MySQL to testing matrix</li>
+</ul>
+</div>
+<div class="section" id="id28">
+<h3>0.10.1 (2013-10-18)<a class="headerlink" href="#id28" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added vacuum function</li>
+</ul>
+</div>
+<div class="section" id="id29">
+<h3>0.10.0 (2013-10-09)<a class="headerlink" href="#id29" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Validity versioning strategy</li>
+<li>Changeset supports custom transaction column names</li>
+<li>Reify -&gt; Revert</li>
+<li>Fixed revert to support class level column exclusion</li>
+</ul>
+</div>
+<div class="section" id="id30">
+<h3>0.9.0 (2013-09-12)<a class="headerlink" href="#id30" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Ability to track property modifications</li>
+<li>New configuration options: track_property_modifications and modified_flag_suffix</li>
+</ul>
+</div>
+<div class="section" id="id31">
+<h3>0.8.7 (2013-09-04)<a class="headerlink" href="#id31" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Only autoincremented columns marked as autoincrement=False for history tables. This enables alembic migrations to generate without annoying explicit autoincrement=False args.</li>
+</ul>
+</div>
+<div class="section" id="id32">
+<h3>0.8.6 (2013-08-21)<a class="headerlink" href="#id32" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Custom database schema support added</li>
+</ul>
+</div>
+<div class="section" id="id33">
+<h3>0.8.5 (2013-08-01)<a class="headerlink" href="#id33" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>TSVectorType columns not versioned by default (in order to avoid massive version histories)</li>
+</ul>
+</div>
+<div class="section" id="id34">
+<h3>0.8.4 (2013-07-31)<a class="headerlink" href="#id34" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Full MySQL and SQLite support added</li>
+</ul>
+</div>
+<div class="section" id="id35">
+<h3>0.8.3 (2013-07-29)<a class="headerlink" href="#id35" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed UnitOfWork changed entities handling (now checks only for versioned attributes not all object attributes)</li>
+<li>Fixed UnitOfWork TransactionMeta object creation (now checks if actual modifications were made)</li>
+</ul>
+</div>
+<div class="section" id="id36">
+<h3>0.8.2 (2013-07-26)<a class="headerlink" href="#id36" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed MySQL history table primary key generation (autoincrement=False now forced for transaction_id column)</li>
+</ul>
+</div>
+<div class="section" id="id37">
+<h3>0.8.1 (2013-07-25)<a class="headerlink" href="#id37" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added support for SQLAlchemy-i18n</li>
+</ul>
+</div>
+<div class="section" id="id38">
+<h3>0.8.0 (2013-07-25)<a class="headerlink" href="#id38" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added database independent transaction meta parameter handling (formerly supported postgres only)</li>
+</ul>
+</div>
+<div class="section" id="id39">
+<h3>0.7.13 (2013-07-24)<a class="headerlink" href="#id39" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Smarter is_modified handling for UnitOfWork (now understands excluded properties)</li>
+</ul>
+</div>
+<div class="section" id="id40">
+<h3>0.7.12 (2013-07-23)<a class="headerlink" href="#id40" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed FlaskVersioningManager schematics when working outside of request context (again)</li>
+<li>Added possibility to use custom UnitOfWork class</li>
+</ul>
+</div>
+<div class="section" id="id41">
+<h3>0.7.11 (2013-07-23)<a class="headerlink" href="#id41" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed FlaskVersioningManager schematics when working outside of request context</li>
+</ul>
+</div>
+<div class="section" id="id42">
+<h3>0.7.10 (2013-07-23)<a class="headerlink" href="#id42" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed is_auto_assigned_date_column (again)</li>
+<li>Moved some core utility functions to SQLAlchemy-Utils</li>
+</ul>
+</div>
+<div class="section" id="id43">
+<h3>0.7.9 (2013-07-23)<a class="headerlink" href="#id43" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed is_auto_assigned_date_column</li>
+<li>Inflection added to requirements</li>
+</ul>
+</div>
+<div class="section" id="id44">
+<h3>0.7.8 (2013-07-03)<a class="headerlink" href="#id44" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Removed Versioned base class (adding __versioned__ attribute and calling make_versioned() is sufficient for making declarative class versioned)</li>
+</ul>
+</div>
+<div class="section" id="id45">
+<h3>0.7.7 (2013-07-03)<a class="headerlink" href="#id45" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>DateTime columns with defaults excluded by default from history classes</li>
+<li>Column inclusion added as option</li>
+</ul>
+</div>
+<div class="section" id="id46">
+<h3>0.7.6 (2013-07-03)<a class="headerlink" href="#id46" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Smarter changeset handling</li>
+</ul>
+</div>
+<div class="section" id="id47">
+<h3>0.7.5 (2013-07-03)<a class="headerlink" href="#id47" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Improved reify() speed</li>
+</ul>
+</div>
+<div class="section" id="id48">
+<h3>0.7.4 (2013-07-03)<a class="headerlink" href="#id48" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed changeset when parent contains more columns than version class.</li>
+</ul>
+</div>
+<div class="section" id="id49">
+<h3>0.7.3 (2013-06-27)<a class="headerlink" href="#id49" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Transaction log and transaction changes records only created if actual net changes were made during transaction.</li>
+</ul>
+</div>
+<div class="section" id="id50">
+<h3>0.7.2 (2013-06-27)<a class="headerlink" href="#id50" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Removed last references for old revision versioning</li>
+</ul>
+</div>
+<div class="section" id="id51">
+<h3>0.7.1 (2013-06-27)<a class="headerlink" href="#id51" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added is_versioned utility function</li>
+<li>Fixed before operation listeners</li>
+</ul>
+</div>
+<div class="section" id="id52">
+<h3>0.7.0 (2013-06-27)<a class="headerlink" href="#id52" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Version tables no longer have revision column</li>
+<li>Parent tables no longer need revision column</li>
+<li>Version tables primary key is now (parent table pks + transaction_id)</li>
+</ul>
+</div>
+<div class="section" id="id53">
+<h3>0.6.8 (2013-06-26)<a class="headerlink" href="#id53" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Make versioned join table inherited classes support multiple consecutive flushes per transaction</li>
+</ul>
+</div>
+<div class="section" id="id54">
+<h3>0.6.7 (2013-06-26)<a class="headerlink" href="#id54" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed association versioning when using executemany</li>
+</ul>
+</div>
+<div class="section" id="id55">
+<h3>0.6.6 (2013-06-26)<a class="headerlink" href="#id55" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Improved transaction log changed_entities schematics</li>
+</ul>
+</div>
+<div class="section" id="id56">
+<h3>0.6.5 (2013-06-26)<a class="headerlink" href="#id56" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added possibility to add lazy values in transaction context meta</li>
+</ul>
+</div>
+<div class="section" id="id57">
+<h3>0.6.4 (2013-06-25)<a class="headerlink" href="#id57" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Version tables no longer generated when versioning attribute of model set to False</li>
+</ul>
+</div>
+<div class="section" id="id58">
+<h3>0.6.3 (2013-06-25)<a class="headerlink" href="#id58" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Revision column not nullable in version classes</li>
+</ul>
+</div>
+<div class="section" id="id59">
+<h3>0.6.2 (2013-06-25)<a class="headerlink" href="#id59" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed relationship building for non-versioned classes</li>
+</ul>
+</div>
+<div class="section" id="id60">
+<h3>0.6.1 (2013-06-25)<a class="headerlink" href="#id60" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Parent table primary keys remain not nullable in generated version table</li>
+</ul>
+</div>
+<div class="section" id="id61">
+<h3>0.6.0 (2013-06-25)<a class="headerlink" href="#id61" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added database agnostic versioning (no need for PostgreSQL specific triggers anymore)</li>
+<li>Fixed version object relationships (never worked properly in previous versions)</li>
+<li>New configuration option versioning allows setting the versioning on and off per child class.</li>
+<li>Added column exclusion</li>
+</ul>
+</div>
+<div class="section" id="id62">
+<h3>0.5.1 (2013-06-20)<a class="headerlink" href="#id62" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added improved context managing capabilities for transactions via VersioningManager.tx_context</li>
+</ul>
+</div>
+<div class="section" id="id63">
+<h3>0.5.0 (2013-06-20)<a class="headerlink" href="#id63" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Removed Versioned base class, versioned objects only need to have __versioned__ defined.</li>
+<li>Session versioning now part of make_versioned function</li>
+<li>Added meta parameter in TransactionLog</li>
+<li>TransactionChanges model for tracking changed entities in given transaction</li>
+<li>Added Flask extension</li>
+</ul>
+</div>
+<div class="section" id="id64">
+<h3>0.4.2 (2013-06-18)<a class="headerlink" href="#id64" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Alembic trigger syncing fixed for drop column and add column</li>
+</ul>
+</div>
+<div class="section" id="id65">
+<h3>0.4.1 (2013-06-18)<a class="headerlink" href="#id65" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Alembic trigger syncing fixed</li>
+</ul>
+</div>
+<div class="section" id="id66">
+<h3>0.4.0 (2013-06-18)<a class="headerlink" href="#id66" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added support for multiple updates for same row within single transaction</li>
+<li>History tables have now own revision column</li>
+</ul>
+</div>
+<div class="section" id="id67">
+<h3>0.3.12 (2013-06-18)<a class="headerlink" href="#id67" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Not null constraints removed from all reflected columns</li>
+<li>Fixed reify when parent has not null constraints</li>
+<li>Added support for reifying deletion</li>
+</ul>
+</div>
+<div class="section" id="id68">
+<h3>0.3.11 (2013-06-18)<a class="headerlink" href="#id68" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Single table inheritance support added</li>
+</ul>
+</div>
+<div class="section" id="id69">
+<h3>0.3.10 (2013-06-18)<a class="headerlink" href="#id69" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Generated operation_type column not nullable by default</li>
+</ul>
+</div>
+<div class="section" id="id70">
+<h3>0.3.9 (2013-06-18)<a class="headerlink" href="#id70" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added drop_table trigger synchronization</li>
+</ul>
+</div>
+<div class="section" id="id71">
+<h3>0.3.8 (2013-06-18)<a class="headerlink" href="#id71" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Autoincrementation automatically removed from reflected primary keys</li>
+</ul>
+</div>
+<div class="section" id="id72">
+<h3>0.3.7 (2013-06-18)<a class="headerlink" href="#id72" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added identifier quoting for all column names</li>
+</ul>
+</div>
+<div class="section" id="id73">
+<h3>0.3.6 (2013-06-18)<a class="headerlink" href="#id73" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Identifier quoting for create_trigger_sql</li>
+</ul>
+</div>
+<div class="section" id="id74">
+<h3>0.3.5 (2013-06-12)<a class="headerlink" href="#id74" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added alembic operations proxy class</li>
+</ul>
+</div>
+<div class="section" id="id75">
+<h3>0.3.4 (2013-06-12)<a class="headerlink" href="#id75" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>VersioningManager now added in __versioned__ dict of each versioned class</li>
+</ul>
+</div>
+<div class="section" id="id76">
+<h3>0.3.3 (2013-06-12)<a class="headerlink" href="#id76" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Creating TransactionLog now checks if it already exists.</li>
+</ul>
+</div>
+<div class="section" id="id77">
+<h3>0.3.2 (2013-06-12)<a class="headerlink" href="#id77" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added operation_type column to version tables.</li>
+</ul>
+</div>
+<div class="section" id="id78">
+<h3>0.3.1 (2013-06-12)<a class="headerlink" href="#id78" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Versioned mixin no longer holds lists of pending objects</li>
+<li>Added VersioningManager for more customizable versioning syntax</li>
+</ul>
+</div>
+<div class="section" id="id79">
+<h3>0.3.0 (2013-06-10)<a class="headerlink" href="#id79" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Model changesets</li>
+<li>Fixed previous and next accessors</li>
+<li>Updates generate versions only if actual changes occur</li>
+</ul>
+</div>
+<div class="section" id="id80">
+<h3>0.2.1 (2013-06-10)<a class="headerlink" href="#id80" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added sanity check in all_affected_entities</li>
+</ul>
+</div>
+<div class="section" id="id81">
+<h3>0.2.0 (2013-06-10)<a class="headerlink" href="#id81" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added backref relations to TransactionLog</li>
+<li>Added all_affected_entities property to TransactionLog</li>
+</ul>
+</div>
+<div class="section" id="id82">
+<h3>0.1.9 (2013-06-10)<a class="headerlink" href="#id82" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Renamed internal attribute __pending__ to __pending_versioned__ in order to avoid variable naming collisions.</li>
+</ul>
+</div>
+<div class="section" id="id83">
+<h3>0.1.8 (2013-06-10)<a class="headerlink" href="#id83" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Better checking of model table name in scenarios where model does not have __tablename__ defined.</li>
+</ul>
+</div>
+<div class="section" id="id84">
+<h3>0.1.7 (2013-06-07)<a class="headerlink" href="#id84" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added make_versioned for more robust declaration of versioned mappers</li>
+</ul>
+</div>
+<div class="section" id="id85">
+<h3>0.1.6 (2013-06-07)<a class="headerlink" href="#id85" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added PostgreSQLAdapter class</li>
+</ul>
+</div>
+<div class="section" id="id86">
+<h3>0.1.5 (2013-06-07)<a class="headerlink" href="#id86" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Made trigger procedures table specific to allow more fine-grained control.</li>
+</ul>
+</div>
+<div class="section" id="id87">
+<h3>0.1.4 (2013-06-06)<a class="headerlink" href="#id87" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Added column order inspection.</li>
+</ul>
+</div>
+<div class="section" id="id88">
+<h3>0.1.3 (2013-06-06)<a class="headerlink" href="#id88" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Removed foreign key dependency from version table and transaction table</li>
+</ul>
+</div>
+<div class="section" id="id89">
+<h3>0.1.2 (2013-06-06)<a class="headerlink" href="#id89" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Fixed packaging</li>
+</ul>
+</div>
+<div class="section" id="id90">
+<h3>0.1.1 (2013-06-06)<a class="headerlink" href="#id90" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Initial support for join table inheritance</li>
+</ul>
+</div>
+<div class="section" id="id91">
+<h3>0.1.0 (2013-06-05)<a class="headerlink" href="#id91" title="제목 주소">¶</a></h3>
+<ul class="simple">
+<li>Initial release</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2013, Konsta Vesterinen.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.9',
+            LANGUAGE:'ko',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/translations.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>
